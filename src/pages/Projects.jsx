@@ -36,11 +36,17 @@ export default function Projects() {
   };
 
   const chipClass = (isActive) =>
-    `inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+    `shrink-0 snap-start inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
       isActive
         ? "bg-accent/10 border-accent text-accent"
         : "border-border text-muted hover:border-accent hover:text-accent"
     }`;
+
+  // Horizontal, touch-swipeable, scrollbar hidden — native momentum
+  // scroll on mobile does the "swipe like a phone" feel for free, this
+  // class just hides the bar so it doesn't look like a scroll widget.
+  const scrollRowClass =
+    "flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-20 md:py-28 overflow-x-hidden">
@@ -76,7 +82,7 @@ export default function Projects() {
           <p className="font-mono text-[11px] uppercase tracking-widest text-muted mb-3">
             Category
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className={scrollRowClass}>
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -115,7 +121,7 @@ export default function Projects() {
                 <p className="text-[10px] font-mono uppercase tracking-widest text-muted/60 mb-2">
                   {group.title}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className={scrollRowClass}>
                   {group.skills.map(({ name, icon: Icon }) => (
                     <button
                       key={name}

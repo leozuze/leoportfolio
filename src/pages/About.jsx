@@ -1,21 +1,21 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, Brain, Code2, Rocket, GraduationCap, MapPin } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import heroImg from "../assets/images/heroimg.jpeg";
+import heroImg from "../assets/images/heroimg.webp";
 
 const quickFacts = [
   { label: "Based in", value: "Pune, India" },
   { label: "Studying", value: "Vishwakarma University" },
   { label: "Year", value: "2nd Year" },
-  { label: "Focus", value: "AI Fintech Dev" },
+  { label: "Focus", value: "AI & Fintech" },
 ];
 
 const focusAreas = [
   {
-    title: "AI Fintech Dev & Data Science",
+    title: "AI & Data Science",
     icon: Brain,
     detail:
-      "Python, Pandas, and scikit-learn to clean, explore, and model financial data turning raw numbers into something a system can act on.",
+      "Python, Pandas, and scikit-learn to clean, explore, and model financial data — turning raw numbers into something a system can act on.",
   },
   {
     title: "Full Stack Development",
@@ -27,7 +27,7 @@ const focusAreas = [
     title: "Currently Exploring",
     icon: Rocket,
     detail:
-      "Agentic coding tools like Antigravity, and going deeper on model training the next layer past classic ML.",
+      "Agentic coding tools like Antigravity, and going deeper on model training — the next layer past classic ML.",
   },
 ];
 
@@ -99,13 +99,13 @@ export default function About() {
             variants={slideLeft}
             className="mt-6 text-muted text-sm md:text-base max-w-md leading-relaxed"
           >
-            I'm Leo a second-year student at Vishwakarma University in
+            I'm Leo — a second-year student at Vishwakarma University in
             Pune, India, spending most of my time in the overlap between AI
             and fintech development. I like the pipeline side of things:
             pulling in messy data, cleaning it with Pandas, and training
             models that actually hold up. But a model nobody can reach isn't
-            very useful, so I build the full stack around it too React on
-            the frontend, Express and MongoDB behind it so the work ends up
+            very useful, so I build the full stack around it too — React on
+            the frontend, Express and MongoDB behind it — so the work ends up
             in something people can open and use.
           </motion.p>
 
@@ -228,7 +228,7 @@ export default function About() {
               Vishwakarma University, Pune
             </h2>
             <p className="text-sm text-muted mt-1">
-              2nd Year currently building toward AI and fintech development
+              2nd Year — currently building toward AI and fintech development
               alongside coursework.
             </p>
           </div>

@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import heroImg from "../../assets/images/heroimg.jpeg";
+import heroImg from "../../assets/images/heroimg.webp";
 
 export default function Hero() {
   const shouldReduceMotion = useReducedMotion();
