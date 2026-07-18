@@ -1,20 +1,33 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import heroImg from "../../assets/images/heroimg.jpeg";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, ease: "easeOut" },
-  }),
-};
-
 export default function Hero() {
+  const shouldReduceMotion = useReducedMotion();
+
+  // Text column slides in from the left, staggered line by line
+  const slideLeft = {
+    hidden: { opacity: 0, x: shouldReduceMotion ? 0 : -36 },
+    visible: (i = 0) => ({
+      opacity: 1,
+      x: 0,
+      transition: { delay: i * 0.12, duration: 0.55, ease: "easeOut" },
+    }),
+  };
+
+  // Portrait slides in from the right, arriving after the text has started
+  const slideRight = {
+    hidden: { opacity: 0, x: shouldReduceMotion ? 0 : 56 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.65, ease: "easeOut", delay: 0.25 },
+    },
+  };
+
   return (
-    <section className="max-w-6xl mx-auto px-6 py-20 md:py-28">
+    <section className="max-w-6xl mx-auto px-6 py-20 md:py-28 overflow-x-hidden">
       <div className="grid md:grid-cols-2 gap-12 items-center">
         {/* Text side */}
         <div>
@@ -22,7 +35,7 @@ export default function Hero() {
             initial="hidden"
             animate="visible"
             custom={0}
-            variants={fadeUp}
+            variants={slideLeft}
             className="font-heading text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-text"
           >
             Hi, I Am Leo Zuze,
@@ -34,7 +47,7 @@ export default function Hero() {
             initial="hidden"
             animate="visible"
             custom={1}
-            variants={fadeUp}
+            variants={slideLeft}
             className="mt-6 text-muted text-sm md:text-base max-w-md leading-relaxed"
           >
             I build reliable, data-driven systems and the interfaces that
@@ -46,11 +59,11 @@ export default function Hero() {
             initial="hidden"
             animate="visible"
             custom={2}
-            variants={fadeUp}
+            variants={slideLeft}
             className="mt-9 flex flex-wrap gap-4"
           >
             <NavLink
-              to="/contact"
+              to="/about"
               className="inline-flex items-center gap-2 border border-border px-6 py-3 rounded-full font-medium text-sm text-text hover:border-accent hover:text-accent transition-colors"
             >
               Know Me
@@ -66,9 +79,9 @@ export default function Hero() {
 
         {/* Image side */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          initial="hidden"
+          animate="visible"
+          variants={slideRight}
           className="relative flex justify-center md:justify-end"
         >
           <div className="relative w-full max-w-xs md:max-w-sm">
@@ -76,7 +89,10 @@ export default function Hero() {
             <div className="absolute -inset-3 bg-gradient-to-br from-accent/15 via-surface to-accent-2/10 rounded-[2.5rem] -rotate-6 border border-border" />
 
             {/* Dotted pattern accent */}
-            <svg
+            <motion.svg
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
               className="absolute -top-6 -left-6 w-16 h-16 text-accent/30 -z-0"
               viewBox="0 0 60 60"
               fill="none"
@@ -92,16 +108,21 @@ export default function Hero() {
                   />
                 ))
               )}
-            </svg>
+            </motion.svg>
 
             {/* Yellow accent blob */}
-            <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-accent-2/25 rounded-full blur-xl" />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="absolute -bottom-4 -right-4 w-20 h-20 bg-accent-2/25 rounded-full blur-xl"
+            />
 
             {/* Small floating badge */}
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.5 }}
+              transition={{ delay: 1, duration: 0.5 }}
               className="absolute top-4 -right-3 md:-right-5 bg-bg border border-border rounded-2xl px-3 py-2 shadow-lg z-20"
             >
               <p className="text-[10px] font-mono text-muted uppercase tracking-widest">
@@ -124,11 +145,11 @@ export default function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
+        transition={{ delay: 1.1, duration: 0.5 }}
         className="flex justify-center mt-16"
       >
         <motion.div
-          animate={{ y: [0, 8, 0] }}
+          animate={shouldReduceMotion ? {} : { y: [0, 8, 0] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
           className="flex flex-col items-center gap-1 text-muted"
         >
