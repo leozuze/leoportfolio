@@ -1,8 +1,8 @@
-# Leo Zuze — AI Fintech Dev & Full Stack Engineer
+# Leo Zuze AI Fintech Dev & Full Stack Engineer
 
 A modern portfolio showcasing **AI, fintech development, and full-stack engineering** work. Built with React, Vite, and Tailwind CSS, featuring smooth animations, responsive design, and seamless project browsing.
 
-**Live:** [leoportfolio-nine.vercel.app](https://leoportfolio-nine.vercel.app)
+**Live:** [leoportfolio-nine.vercel.app](https://leozuzedev.vercel.app)
 
 ---
 
