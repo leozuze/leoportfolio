@@ -7,6 +7,7 @@ import {
   FaInstagram,
   FaWhatsapp,
 } from "react-icons/fa";
+import Logo from "../ui/Logo";
 
 const SOCIALS = [
   { icon: FaGithub, href: "https://github.com/leozuze", label: "GitHub" },
@@ -29,11 +30,14 @@ export default function Footer() {
     <footer className="border-t border-border bg-bg pt-20 pb-10">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div>
-          <span className="font-heading text-lg font-bold tracking-tight">
-            <span className="text-accent">LEO</span>
-            <span className="text-text"> ZUZE</span>
-          </span>
-          <p className="text-muted text-sm leading-relaxed mt-4 max-w-xs">
+           <div className="flex items-center gap-2.5">
+            <Logo size={32} />
+            <span className="font-logo italic text-2xl tracking-tight">
+            <span className="text-accent">Leo</span>
+            <span className="text-text"> Zuze</span>
+            </span>
+        </div>
+                <p className="text-muted text-sm leading-relaxed mt-4 max-w-xs">
             Aspiring AI & fintech developer exploring machine learning with Python, building modern web experiences on the side.
           </p>
         </div>

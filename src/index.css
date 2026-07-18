@@ -1,15 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", sans-serif;
   --font-heading: "Geist", sans-serif;
   --font-mono: "Geist Mono", monospace;
+  --font-logo: "Instrument Serif", serif;   /* ← new line */
 
-  --color-bg: #141416;        /* warm charcoal, not pure black */
-  --color-surface: #1D1D20;   /* cards, elevated panels */
-  --color-border: #2B2B2E;    /* subtle dividers */
-  --color-text: #FAFAF8;      /* warm off-white */
-  --color-muted: #9C9C98;     /* secondary text */
-  --color-accent: #F2621B;    /* orange — primary CTA, links, active state */
-  --color-accent-2: #FFC542;  /* yellow — sparing highlight, hover glow */
+  --color-bg: #141416;
+  --color-surface: #1D1D20;
+  --color-border: #2B2B2E;
+  --color-text: #FAFAF8;
+  --color-muted: #9C9C98;
+  --color-accent: #F2621B;
+  --color-accent-2: #FFC542;
 }

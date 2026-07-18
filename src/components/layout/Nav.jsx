@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 import { useScrollPosition } from "../../hooks/useScrollPosition";
 import MobileMenu from "./MobileMenu";
+import Logo from "../ui/Logo";
 
 const LINKS = [
   { label: "Home", to: "/" },
@@ -26,12 +27,12 @@ export default function Nav() {
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
-        <NavLink to="/" className="flex items-baseline gap-1.5 group">
-          <span className="font-heading text-lg font-bold tracking-tight">
-            <span className="text-accent">LEO</span>
-            <span className="text-text"> ZUZE</span>
-          </span>
-
+        <NavLink to="/" className="flex items-center gap-2.5 group">
+          <Logo size={34} />
+        <span className="font-logo italic text-2xl tracking-tight">
+        <span className="text-accent">Leo</span>
+        <span className="text-text"> Zuze</span>
+        </span>
         </NavLink>
 
         {/* Desktop links */}
