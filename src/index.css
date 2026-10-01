@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", sans-serif;
-  --font-heading: "Geist", sans-serif;
-  --font-mono: "Geist Mono", monospace;
-  --font-logo: "Instrument Serif", serif;   /* ← new line */
+ --font-sans: "Geist Variable", system-ui, sans-serif;
+--font-heading: "Geist Variable", system-ui, sans-serif;
+--font-mono: "Geist Mono Variable", ui-monospace, monospace;
+--font-logo: "Instrument Serif", serif;
 
   --color-bg: #141416;
   --color-surface: #1D1D20;
@@ -14,4 +14,13 @@
   --color-muted: #9C9C98;
   --color-accent: #F2621B;
   --color-accent-2: #FFC542;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
 }

@@ -1,164 +1,113 @@
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, ChevronDown } from "lucide-react";
+import { useRef } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import heroImg from "../../assets/images/heroimg.webp";
+import HeroPortrait from "./HeroPortrait";
+
+const Line = ({ i, children, className = "" }) => (
+  <span className="block overflow-hidden pb-[0.14em]">
+    <motion.span
+      className={`block ${className}`}
+      initial={{ y: "110%" }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.9, delay: 0.1 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.span>
+  </span>
+);
 
 export default function Hero() {
-  const shouldReduceMotion = useReducedMotion();
+  const ref = useRef(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
 
-  // Text column slides in from the left, staggered line by line
-  const slideLeft = {
-    hidden: { opacity: 0, x: shouldReduceMotion ? 0 : -36 },
-    visible: (i = 0) => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.12, duration: 0.55, ease: "easeOut" },
-    }),
-  };
-
-  // Portrait slides in from the right, arriving after the text has started
-  const slideRight = {
-    hidden: { opacity: 0, x: shouldReduceMotion ? 0 : 56 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.65, ease: "easeOut", delay: 0.25 },
-    },
-  };
+  const textOpacity = useTransform(p, [0, 0.4], [1, 0]);
+  const textY = useTransform(p, [0, 0.4], [0, -70]);
+  const zoom = useTransform(p, [0, 1], [1, 1.4]);
+  const cue = useTransform(p, [0, 0.12], [1, 0]);
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-20 md:py-28 overflow-x-hidden">
-      <div className="grid md:grid-cols-2 gap-12 items-center">
-        {/* Text side */}
-        <div>
-          <motion.h1
-            initial="hidden"
-            animate="visible"
-            custom={0}
-            variants={slideLeft}
-            className="font-heading text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-text"
-          >
-            Hi, I Am Leo Zuze,
-            <br />
-            <span className="text-accent">AI Fintech Dev & Full Stack Engineer.</span>
-          </motion.h1>
+    <section ref={ref} className={reduce ? "" : "h-[220svh]"}>
+      <div
+        className={`relative flex flex-col overflow-hidden ${
+          reduce ? "min-h-[calc(100svh-5rem)]" : "sticky top-20 h-[calc(100svh-5rem)]"
+        }`}
+      >
+        {/* hairline columns: the only background decoration */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 mx-auto grid max-w-6xl grid-cols-4 px-6">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className={`border-l border-border/50 ${i === 3 ? "border-r" : ""}`} />
+          ))}
+        </div>
 
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            custom={1}
-            variants={slideLeft}
-            className="mt-6 text-muted text-sm md:text-base max-w-md leading-relaxed"
+        <div className="relative mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-6 md:grid-cols-12">
+          <motion.div
+            style={reduce ? undefined : { opacity: textOpacity, y: textY }}
+            className="md:col-span-7"
           >
-            I build reliable, data-driven systems and the interfaces that
-            make them usable combining machine learning with clean,
-            production-ready web development.
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+              className="font-mono text-xs uppercase tracking-widest text-muted"
+            >
+              Leo Zuze · Web &amp; AI Developer
+            </motion.p>
+
+            <h1 className="mt-6 font-heading text-5xl font-semibold leading-[1.02] tracking-tight text-text sm:text-6xl lg:text-7xl">
+              <Line i={0}>Websites and software</Line>
+              <Line i={1}>that bring in</Line>
+              <Line i={2} className="font-logo font-normal italic text-accent">customers.</Line>
+            </h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+              className="mt-7 max-w-md text-base leading-relaxed text-muted"
+            >
+              I design and build fast, modern websites, web apps and dashboards
+              for businesses that want to grow.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85, duration: 0.6 }}
+              className="mt-9 flex flex-wrap gap-4"
+            >
+              <NavLink to="/contact" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-accent-2">
+                Start a project <ArrowUpRight size={16} />
+              </NavLink>
+              <NavLink to="/projects" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent">
+                See live work
+              </NavLink>
+            </motion.div>
+          </motion.div>
 
           <motion.div
-            initial="hidden"
-            animate="visible"
-            custom={2}
-            variants={slideLeft}
-            className="mt-9 flex flex-wrap gap-4"
+            style={reduce ? undefined : { scale: zoom }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.25 }}
+            className="md:col-span-5"
           >
-            <NavLink
-              to="/about"
-              className="inline-flex items-center gap-2 border border-border px-6 py-3 rounded-full font-medium text-sm text-text hover:border-accent hover:text-accent transition-colors"
-            >
-              Know Me
-            </NavLink>
-            <NavLink
-              to="/projects"
-              className="inline-flex items-center gap-2 bg-accent text-bg px-6 py-3 rounded-full font-semibold text-sm hover:bg-accent-2 hover:scale-105 transition-all duration-200"
-            >
-              See My Projects <ArrowUpRight size={16} />
-            </NavLink>
+            <HeroPortrait />
           </motion.div>
         </div>
 
-        {/* Image side */}
         <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={slideRight}
-          className="relative flex justify-center md:justify-end"
+          style={reduce ? undefined : { opacity: cue }}
+          className="relative mx-auto flex w-full max-w-6xl items-center justify-between border-t border-border/60 px-6 py-4 font-mono text-[11px] uppercase tracking-widest text-muted"
         >
-          <div className="relative w-full max-w-xs md:max-w-sm">
-            {/* Rotated background card */}
-            <div className="absolute -inset-3 bg-gradient-to-br from-accent/15 via-surface to-accent-2/10 rounded-[2.5rem] -rotate-6 border border-border" />
-
-            {/* Dotted pattern accent */}
-            <motion.svg
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="absolute -top-6 -left-6 w-16 h-16 text-accent/30 -z-0"
-              viewBox="0 0 60 60"
-              fill="none"
-            >
-              {Array.from({ length: 5 }).map((_, row) =>
-                Array.from({ length: 5 }).map((_, col) => (
-                  <circle
-                    key={`${row}-${col}`}
-                    cx={6 + col * 12}
-                    cy={6 + row * 12}
-                    r="2"
-                    fill="currentColor"
-                  />
-                ))
-              )}
-            </motion.svg>
-
-            {/* Yellow accent blob */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="absolute -bottom-4 -right-4 w-20 h-20 bg-accent-2/25 rounded-full blur-xl"
-            />
-
-            {/* Small floating badge */}
-            <motion.div
-              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.5 }}
-              className="absolute top-4 -right-3 md:-right-5 bg-bg border border-border rounded-2xl px-3 py-2 shadow-lg z-20"
-            >
-              <p className="text-[10px] font-mono text-muted uppercase tracking-widest">
-                Available for
-              </p>
-              <p className="text-xs font-semibold text-accent">Freelance work</p>
-            </motion.div>
-
-            {/* Image */}
-            <img
-              src={heroImg}
-              alt="Leo Zuze"
-              className="relative w-full aspect-[4/5] object-cover rounded-[2rem] z-10"
-            />
-          </div>
+          <span>Pune, India</span>
+          <span className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Available for freelance
+          </span>
+          <span className="hidden sm:inline">Scroll</span>
         </motion.div>
       </div>
-
-      {/* Scroll down indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.1, duration: 0.5 }}
-        className="flex justify-center mt-16"
-      >
-        <motion.div
-          animate={shouldReduceMotion ? {} : { y: [0, 8, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-1 text-muted"
-        >
-          <span className="text-[10px] font-mono uppercase tracking-widest">
-            Scroll Down
-          </span>
-          <ChevronDown size={16} className="text-accent" />
-        </motion.div>
-      </motion.div>
     </section>
   );
 }
