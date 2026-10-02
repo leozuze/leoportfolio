@@ -6,6 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import HeroPortrait from "./HeroPortrait";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { useIntro } from "../intro/IntroContext";
 
 const HeroShader = lazy(() => import("./HeroShader"));
 
@@ -25,6 +26,7 @@ const Line = ({ i, children, className = "" }) => (
 export default function Hero() {
   const reduce = useReducedMotion();
   const mobile = useIsMobile();
+  const { done } = useIntro();
   const { scrollY } = useScroll();
 
   // Step 1 (0-200): text card and portrait card slide into each other
@@ -87,6 +89,7 @@ export default function Hero() {
           }
           className="relative overflow-hidden"
         >
+          {/* shader loads behind the intro, so it is ready when the cards arrive */}
           <motion.div
             aria-hidden
             className="absolute -inset-6 -z-10"
@@ -117,79 +120,90 @@ export default function Hero() {
             </motion.div>
 
             <div className="relative grid min-h-[calc(100svh-5rem)] items-center gap-14 px-6 py-12 md:grid-cols-12 md:gap-8">
-              {/* card 1: text */}
-              <motion.div
-                style={
-                  reduce
-                    ? undefined
-                    : {
-                        x: textX,
-                        rotate: textRotate,
-                        scale: textScale,
-                        borderColor: textBorder,
-                        backgroundColor: textBg,
+              {done && (
+                <>
+                  {/* card 1: text, floats in slowly */}
+                  <motion.div
+                    className="relative z-10 md:col-span-7"
+                    initial={{ opacity: 0, y: 90 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <motion.div
+                      style={
+                        reduce
+                          ? undefined
+                          : {
+                              x: textX,
+                              rotate: textRotate,
+                              scale: textScale,
+                              borderColor: textBorder,
+                              backgroundColor: textBg,
+                            }
                       }
-                }
-                className="relative z-10 rounded-3xl border border-border bg-bg/70 p-6 sm:p-8 md:col-span-7 lg:p-10"
-              >
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1, duration: 0.6 }}
-                  className="font-mono text-xs uppercase tracking-widest text-muted"
-                >
-                  Leo Zuze · Pune, India
-                </motion.p>
+                      className="rounded-3xl border border-border bg-bg/70 p-6 sm:p-8 lg:p-10"
+                    >
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5, duration: 0.8 }}
+                        className="font-mono text-xs uppercase tracking-widest text-muted"
+                      >
+                        Leo Zuze · Pune, India
+                      </motion.p>
 
-                <h1 className="mt-6 text-text">
-                  <Line i={0} className="font-logo text-[3.25rem] font-normal italic leading-[0.95] text-accent sm:text-7xl lg:text-[6.5rem]">
-                    AI Developer
-                  </Line>
-                  <Line i={1} className="mt-4 font-heading text-xl font-medium leading-tight tracking-tight sm:text-3xl lg:text-4xl">
-                    I turn business problems into
-                  </Line>
-                  <Line i={2} className="font-heading text-xl font-medium leading-tight tracking-tight sm:text-3xl lg:text-4xl">
-                    software that works.
-                  </Line>
-                </h1>
+                      <h1 className="mt-6 text-text">
+                        <Line i={2} className="font-logo text-[3.25rem] font-normal italic leading-[0.95] text-accent sm:text-7xl lg:text-[6.5rem]">
+                          AI Developer
+                        </Line>
+                        <Line i={3} className="mt-4 font-heading text-xl font-medium leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+                          I turn business problems into
+                        </Line>
+                        <Line i={4} className="font-heading text-xl font-medium leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+                          software that works.
+                        </Line>
+                      </h1>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.75, duration: 0.6 }}
-                  className="mt-7 max-w-md text-base leading-relaxed text-muted"
-                >
-                  Websites, web apps, dashboards and AI features, designed and built
-                  end to end by one developer, from first idea to live launch.
-                </motion.p>
+                      <motion.p
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.3, duration: 0.7 }}
+                        className="mt-7 max-w-md text-base leading-relaxed text-muted"
+                      >
+                        Websites, web apps, dashboards and AI features, designed and built
+                        end to end by one developer, from first idea to live launch.
+                      </motion.p>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9, duration: 0.6 }}
-                  className="mt-9 flex flex-wrap items-center gap-4"
-                >
-                  <NavLink to="/contact" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-accent-2">
-                    Start a project <ArrowUpRight size={16} />
-                  </NavLink>
-                  <NavLink to="/projects" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent">
-                    See live work
-                  </NavLink>
-                </motion.div>
-              </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.5, duration: 0.7 }}
+                        className="mt-9 flex flex-wrap items-center gap-4"
+                      >
+                        <NavLink to="/contact" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-accent-2">
+                          Start a project <ArrowUpRight size={16} />
+                        </NavLink>
+                        <NavLink to="/projects" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent">
+                          See live work
+                        </NavLink>
+                      </motion.div>
+                    </motion.div>
+                  </motion.div>
 
-              {/* card 2: portrait, slides over the text card */}
-              <motion.div
-                style={
-                  reduce ? undefined : { x: imgX, y: imgY, scale: imgScale, rotate: imgRotate }
-                }
-                initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
-                animate={{ clipPath: "inset(-20% -20% -20% -20%)" }}
-                transition={{ duration: 1.1, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                className="relative z-20 md:col-span-5"
-              >
-                <HeroPortrait />
-              </motion.div>
+                  {/* card 2: portrait, wipes in a beat later */}
+                  <motion.div
+                    style={
+                      reduce ? undefined : { x: imgX, y: imgY, scale: imgScale, rotate: imgRotate }
+                    }
+                    initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
+                    animate={{ clipPath: "inset(-20% -20% -20% -20%)" }}
+                    transition={{ duration: 1.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-20 md:col-span-5"
+                  >
+                    <HeroPortrait />
+                  </motion.div>
+                </>
+              )}
             </div>
           </div>
         </motion.div>
