@@ -1,11 +1,16 @@
-import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { lazy, Suspense, useEffect } from "react";
+import {
+  motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform,
+} from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import HeroPortrait from "./HeroPortrait";
+import { useIsMobile } from "../../hooks/useIsMobile";
+
+const HeroShader = lazy(() => import("./HeroShader"));
 
 const Line = ({ i, children, className = "" }) => (
-  <span className="block overflow-hidden pb-[0.14em]">
+  <span className="block overflow-hidden pb-[0.14em] pr-2">
     <motion.span
       className={`block ${className}`}
       initial={{ y: "110%" }}
@@ -18,96 +23,180 @@ const Line = ({ i, children, className = "" }) => (
 );
 
 export default function Hero() {
-  const ref = useRef(null);
   const reduce = useReducedMotion();
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const mobile = useIsMobile();
+  const { scrollY } = useScroll();
 
-  const textOpacity = useTransform(p, [0, 0.4], [1, 0]);
-  const textY = useTransform(p, [0, 0.4], [0, -70]);
-  const zoom = useTransform(p, [0, 1], [1, 1.4]);
-  const cue = useTransform(p, [0, 0.12], [1, 0]);
+  // Step 1 (0-200): text card and portrait card slide into each other
+  const S1 = [0, 200];
+  const textX = useTransform(scrollY, S1, [0, mobile ? 0 : 30]);
+  const textRotate = useTransform(scrollY, S1, [0, mobile ? 0 : 2]);
+  const textScale = useTransform(scrollY, S1, [1, 0.96]);
+  const imgX = useTransform(scrollY, S1, [0, mobile ? 0 : -170]);
+  const imgY = useTransform(scrollY, S1, [0, mobile ? -80 : -30]);
+  const imgRotate = useTransform(scrollY, S1, [0, mobile ? 0 : -3]);
+  const imgScale = useTransform(scrollY, S1, [1, 0.97]);
+
+  // Step 2 (200-400): parent card appears around both, text card's own box dissolves
+  const S2 = [200, 400];
+  const parentOpacity = useTransform(scrollY, S2, [0, 1]);
+  const parentScale = useTransform(scrollY, S2, [0.9, 1]);
+  const textBorder = useTransform(scrollY, S2, ["rgba(43,43,46,1)", "rgba(43,43,46,0)"]);
+  const textBg = useTransform(scrollY, S2, ["rgba(20,20,22,0.7)", "rgba(20,20,22,0)"]);
+
+  // Step 3 (400+): the whole parent card sinks while the next sheet covers it
+  const S3 = [420, 1000];
+  const groupScale = useTransform(scrollY, S3, [1, mobile ? 0.95 : 0.9]);
+  const groupY = useTransform(scrollY, S3, [0, mobile ? 60 : 110]);
+  const groupTilt = useTransform(scrollY, S3, [0, mobile ? 0 : 6]);
+  const groupRadius = useTransform(scrollY, S3, [0, 32]);
+  const groupOpacity = useTransform(scrollY, S3, [1, 0.35]);
+
+  // background: slow zoom on scroll + cursor drift (fine pointers only)
+  const bgScale = useTransform(scrollY, [0, 1000], [1, 1.15]);
+  const bgY = useTransform(scrollY, [0, 1000], [0, 80]);
+  const dx = useMotionValue(0);
+  const dy = useMotionValue(0);
+  const driftX = useSpring(dx, { stiffness: 40, damping: 20 });
+
+  useEffect(() => {
+    if (reduce || mobile || !window.matchMedia("(pointer: fine)").matches) return;
+    const move = (e) => {
+      dx.set((e.clientX / window.innerWidth - 0.5) * -40);
+      dy.set((e.clientY / window.innerHeight - 0.5) * -24);
+    };
+    window.addEventListener("pointermove", move, { passive: true });
+    return () => window.removeEventListener("pointermove", move);
+  }, [reduce, mobile, dx, dy]);
 
   return (
-    <section ref={ref} className={reduce ? "" : "h-[220svh]"}>
-      <div
-        className={`relative flex flex-col overflow-hidden ${
-          reduce ? "min-h-[calc(100svh-5rem)]" : "sticky top-20 h-[calc(100svh-5rem)]"
-        }`}
-      >
-        {/* hairline columns: the only background decoration */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 mx-auto grid max-w-6xl grid-cols-4 px-6">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className={`border-l border-border/50 ${i === 3 ? "border-r" : ""}`} />
-          ))}
-        </div>
-
-        <div className="relative mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-6 md:grid-cols-12">
+    <section className="relative">
+      <div className="sticky top-20 isolate" style={{ perspective: 1400 }}>
+        <motion.div
+          style={
+            reduce
+              ? undefined
+              : {
+                  scale: groupScale,
+                  y: groupY,
+                  rotateX: groupTilt,
+                  borderRadius: groupRadius,
+                  opacity: groupOpacity,
+                  transformOrigin: "50% 100%",
+                }
+          }
+          className="relative overflow-hidden"
+        >
           <motion.div
-            style={reduce ? undefined : { opacity: textOpacity, y: textY }}
-            className="md:col-span-7"
+            aria-hidden
+            className="absolute -inset-6 -z-10"
+            style={reduce ? undefined : { scale: bgScale, y: bgY, x: driftX }}
           >
-            <motion.p
+            <motion.div
+              className="h-full w-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.6 }}
-              className="font-mono text-xs uppercase tracking-widest text-muted"
+              transition={{ duration: 1.6, delay: 0.3 }}
             >
-              Leo Zuze · Web &amp; AI Developer
-            </motion.p>
-
-            <h1 className="mt-6 font-heading text-5xl font-semibold leading-[1.02] tracking-tight text-text sm:text-6xl lg:text-7xl">
-              <Line i={0}>Websites and software</Line>
-              <Line i={1}>that bring in</Line>
-              <Line i={2} className="font-logo font-normal italic text-accent">customers.</Line>
-            </h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
-              className="mt-7 max-w-md text-base leading-relaxed text-muted"
-            >
-              I design and build fast, modern websites, web apps and dashboards
-              for businesses that want to grow.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.85, duration: 0.6 }}
-              className="mt-9 flex flex-wrap gap-4"
-            >
-              <NavLink to="/contact" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-accent-2">
-                Start a project <ArrowUpRight size={16} />
-              </NavLink>
-              <NavLink to="/projects" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent">
-                See live work
-              </NavLink>
+              <Suspense fallback={null}>
+                <HeroShader />
+              </Suspense>
             </motion.div>
           </motion.div>
 
-          <motion.div
-            style={reduce ? undefined : { scale: zoom }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.9, delay: 0.25 }}
-            className="md:col-span-5"
-          >
-            <HeroPortrait />
-          </motion.div>
-        </div>
+          <div className="relative mx-auto max-w-6xl">
+            {/* the parent card that ends up holding both cards */}
+            <motion.div
+              aria-hidden
+              style={reduce ? { opacity: 0 } : { opacity: parentOpacity, scale: parentScale }}
+              className="absolute inset-x-2 inset-y-3 rounded-[2.5rem] border border-border bg-surface/60 backdrop-blur-sm sm:inset-x-4"
+            >
+              <span className="absolute -top-3 left-8 bg-bg px-3 font-mono text-[10px] uppercase tracking-widest text-accent">
+                Leo Zuze
+              </span>
+            </motion.div>
 
-        <motion.div
-          style={reduce ? undefined : { opacity: cue }}
-          className="relative mx-auto flex w-full max-w-6xl items-center justify-between border-t border-border/60 px-6 py-4 font-mono text-[11px] uppercase tracking-widest text-muted"
-        >
-          <span>Pune, India</span>
-          <span className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Available for freelance
-          </span>
-          <span className="hidden sm:inline">Scroll</span>
+            <div className="relative grid min-h-[calc(100svh-5rem)] items-center gap-14 px-6 py-12 md:grid-cols-12 md:gap-8">
+              {/* card 1: text */}
+              <motion.div
+                style={
+                  reduce
+                    ? undefined
+                    : {
+                        x: textX,
+                        rotate: textRotate,
+                        scale: textScale,
+                        borderColor: textBorder,
+                        backgroundColor: textBg,
+                      }
+                }
+                className="relative z-10 rounded-3xl border border-border bg-bg/70 p-6 sm:p-8 md:col-span-7 lg:p-10"
+              >
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.6 }}
+                  className="font-mono text-xs uppercase tracking-widest text-muted"
+                >
+                  Leo Zuze · Pune, India
+                </motion.p>
+
+                <h1 className="mt-6 text-text">
+                  <Line i={0} className="font-logo text-[3.25rem] font-normal italic leading-[0.95] text-accent sm:text-7xl lg:text-[6.5rem]">
+                    AI Developer
+                  </Line>
+                  <Line i={1} className="mt-4 font-heading text-xl font-medium leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+                    I turn business problems into
+                  </Line>
+                  <Line i={2} className="font-heading text-xl font-medium leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+                    software that works.
+                  </Line>
+                </h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.75, duration: 0.6 }}
+                  className="mt-7 max-w-md text-base leading-relaxed text-muted"
+                >
+                  Websites, web apps, dashboards and AI features, designed and built
+                  end to end by one developer, from first idea to live launch.
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9, duration: 0.6 }}
+                  className="mt-9 flex flex-wrap items-center gap-4"
+                >
+                  <NavLink to="/contact" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-accent-2">
+                    Start a project <ArrowUpRight size={16} />
+                  </NavLink>
+                  <NavLink to="/projects" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent">
+                    See live work
+                  </NavLink>
+                </motion.div>
+              </motion.div>
+
+              {/* card 2: portrait, slides over the text card */}
+              <motion.div
+                style={
+                  reduce ? undefined : { x: imgX, y: imgY, scale: imgScale, rotate: imgRotate }
+                }
+                initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
+                animate={{ clipPath: "inset(-20% -20% -20% -20%)" }}
+                transition={{ duration: 1.1, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-20 md:col-span-5"
+              >
+                <HeroPortrait />
+              </motion.div>
+            </div>
+          </div>
         </motion.div>
       </div>
+
+      {/* extra pinned scroll so steps 1 and 2 finish before the next sheet arrives */}
+      <div aria-hidden style={{ height: mobile ? 340 : 420 }} />
     </section>
   );
 }
