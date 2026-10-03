@@ -375,11 +375,11 @@ export default function IntroScene({ onDone, onReady, avatar }) {
     >
       <color attach="background" args={[BG]} />
       <fog attach="fog" args={[BG, 9, 20]} />
-      <ambientLight intensity={0.45} />
-      <hemisphereLight args={["#ffffff", "#202024", 0.5]} />
+      <ambientLight intensity={0.9} />
+      <hemisphereLight args={["#ffffff", "#202024", 0.9]} />
       <directionalLight
         position={[4, 7, 5]}
-        intensity={2.2}
+        intensity={2.8}
         castShadow={!lite}
         shadow-mapSize={lite ? [512, 512] : [1024, 1024]}
         shadow-camera-left={-6}
