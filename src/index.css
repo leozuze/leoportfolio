@@ -1,11 +1,10 @@
-
 @import "tailwindcss";
 
 @theme {
- --font-sans: "Geist Variable", system-ui, sans-serif;
---font-heading: "Geist Variable", system-ui, sans-serif;
---font-mono: "Geist Mono Variable", ui-monospace, monospace;
---font-logo: "Instrument Serif", serif;
+  --font-sans: "Geist Variable", system-ui, sans-serif;
+  --font-heading: "Geist Variable", system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --font-logo: "Instrument Serif", serif;
 
   --color-bg: #141416;
   --color-surface: #1D1D20;
@@ -15,12 +14,11 @@
   --color-accent: #F2621B;
   --color-accent-2: #FFC542;
 }
-@keyframes marquee {
-  to { transform: translateX(-50%); }
-}
-.animate-marquee {
-  animation: marquee 40s linear infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee { animation: none; }
+
+/* stop any section from making the page wider than the screen.
+   clip (not hidden) so position: sticky keeps working */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
 }

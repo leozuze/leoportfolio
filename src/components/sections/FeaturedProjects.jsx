@@ -13,6 +13,15 @@ import { WordReveal } from "../motion/primitives";
 const live = projects.filter((p) => p.category === "Websites");
 const n = live.length;
 
+/* a bad or missing url must not crash the page */
+const hostOf = (url) => {
+  try {
+    return new URL(url).host;
+  } catch {
+    return "";
+  }
+};
+
 function useViewportWidth() {
   const [w, setW] = useState(() => window.innerWidth);
   useEffect(() => {
@@ -36,7 +45,7 @@ function RingCard({ p, i, active, cfg }) {
   const shade = useTransform(d, (v) => Math.min(Math.abs(v), 1) * 0.55);
   const zIndex = useTransform(d, (v) => Math.round(100 - Math.abs(v) * 20));
   const pointerEvents = useTransform(d, (v) => (Math.abs(v) < 0.5 ? "auto" : "none"));
-  const host = new URL(p.url).host;
+  const host = hostOf(p.url);
 
   return (
     <motion.div
@@ -73,13 +82,15 @@ export default function FeaturedProjects() {
   const [idx, setIdx] = useState(0);
 
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const raw = useTransform(p, [0.06, 0.94], [0, n - 1]);
+  const raw = useTransform(p, [0.06, 0.94], [0, Math.max(0, n - 1)]);
   const active = useSpring(raw, { stiffness: 110, damping: 24 });
   useMotionValueEvent(active, "change", (v) => setIdx(Math.min(n - 1, Math.max(0, Math.round(v)))));
 
   const w = mobile ? Math.min(vw * 0.78, 340) : Math.min(560, Math.max(360, vw * 0.5));
   const cfg = { w, h: w * 0.66, R: w * (mobile ? 0.75 : 0.95), step: mobile ? 46 : 38 };
-  const cur = live[idx];
+  const cur = live[idx] ?? live[0];
+
+  if (!cur) return null; // no live projects: render nothing instead of crashing
 
   if (reduce) {
     return (
@@ -121,8 +132,11 @@ export default function FeaturedProjects() {
           </NavLink>
         </div>
 
-        {/* the ring */}
-        <div className="relative min-h-0 flex-1" style={{ perspective: 1300, perspectiveOrigin: "50% 45%" }}>
+        {/* the ring (clipped sideways so side cards can't widen the page) */}
+        <div
+          className="relative min-h-0 flex-1 overflow-x-clip"
+          style={{ perspective: 1300, perspectiveOrigin: "50% 45%" }}
+        >
           {live.map((pr, i) => (
             <RingCard key={pr.title} p={pr} i={i} active={active} cfg={cfg} />
           ))}
@@ -145,7 +159,7 @@ export default function FeaturedProjects() {
               <p className="mt-1 text-sm font-medium text-accent">{cur.tagline}</p>
               <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted sm:line-clamp-3">{cur.description}</p>
               <div className="mt-3 flex flex-wrap justify-center gap-2">
-                {cur.highlights.slice(0, 4).map((t) => {
+                {(cur.highlights ?? []).slice(0, 4).map((t) => {
                   const Icon = techIcons[t];
                   return (
                     <span key={t} className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 font-mono text-[11px] text-muted">
