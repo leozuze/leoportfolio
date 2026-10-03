@@ -20,6 +20,8 @@ const T = {
   lidEnd: 3.15,
   ring: 3.15, // "Incoming call"
   connected: 3.95,
+  leaveStart: 2.9, // truck pulls away once the boom is folded
+  leaveEnd: 4.2, // and is fully out of frame
   zoomStart: 4.2,
   end: 5.0,
 };
@@ -28,6 +30,7 @@ export const INTRO_MS = T.end * 1000;
 // ---- layout (world units, ground is y = 0) ----
 const TRUCK_Z = -1.5;
 const TRUCK_START_X = -10;
+const TRUCK_EXIT_X = 22; // how far past centre it drives before it's gone
 const BED_X = -0.9; // laptop spot on the truck bed (truck-local x)
 const BED_TOP = 1.02;
 const MAST = new THREE.Vector3(0.35, 2.05, 0); // boom pivot (truck-local)
@@ -269,13 +272,16 @@ function Rig({ onDone, avatar }) {
     t.current += Math.min(dt, 1 / 30);
     const s = t.current;
 
-    // 1. truck drives in and brakes with a little nose dip
+    // 1. truck drives in, brakes, then (laptop delivered) accelerates off the far side
     const drive = easeOut(prog(s, 0, T.driveEnd));
-    const tx = THREE.MathUtils.lerp(TRUCK_START_X, 0, drive);
+    const leave = prog(s, T.leaveStart, T.leaveEnd);
+    const tx = THREE.MathUtils.lerp(TRUCK_START_X, 0, drive) + TRUCK_EXIT_X * leave * leave;
     truck.current.position.x = tx;
     wheels.current.forEach((w) => w && (w.rotation.z = -(tx - TRUCK_START_X) / WHEEL_R));
     const since = s - T.driveEnd;
-    body.current.rotation.z = since > 0 ? -0.035 * Math.exp(-since * 5) * Math.sin(since * 14) : 0;
+    const dip = since > 0 ? -0.035 * Math.exp(-since * 5) * Math.sin(since * 14) : 0;
+    const squat = 0.03 * Math.sin(Math.PI * prog(s, T.leaveStart, T.leaveStart + 0.9)); // nose lifts as it pulls away
+    body.current.rotation.z = dip + squat;
 
     // 2. laptop: rides on the bed, then arcs over onto the bench
     _a.set(tx + BED_X, BED_TOP, TRUCK_Z);
@@ -286,7 +292,7 @@ function Rig({ onDone, avatar }) {
     laptop.current.rotation.y = Math.sin(lift * Math.PI) * 0.25;
     laptop.current.rotation.z = Math.sin(lift * Math.PI * 2) * 0.04;
 
-    // 3. boom + cable follow the laptop, then swing back to rest
+    // 3. boom + cable follow the laptop, then swing back to rest (and ride away with the truck)
     const pivot = _d.set(tx + MAST.x, MAST.y, TRUCK_Z).clone();
     const carryHook = laptop.current.position.clone().add(new THREE.Vector3(0, 0.06 + HOOK_DROP, 0));
     const restHook = new THREE.Vector3(tx - 1.1, 2.2, TRUCK_Z);
@@ -312,8 +318,8 @@ function Rig({ onDone, avatar }) {
     // 5. camera: slow drift, then push in to the screen
     const zoom = easeInOut(prog(s, T.zoomStart, T.end));
     const drift = Math.sin(s * 0.6) * 0.2;
-    // pull the camera back on narrow / portrait screens so the whole truck fits
-    const fit = Math.max(1, 1.5 / (size.width / size.height));
+    // pull the camera back on narrow / portrait screens so the whole scene fits
+    const fit = Math.max(1, 1.75 / (size.width / size.height));
     camera.position.set(
       THREE.MathUtils.lerp((3.6 + drift) * fit, 0.15, zoom),
       THREE.MathUtils.lerp(2.9 * fit, 1.45, zoom),
@@ -352,16 +358,19 @@ function Rig({ onDone, avatar }) {
 }
 
 export default function IntroScene({ onDone, onReady, avatar }) {
+  // lighter rendering on phones: no shadows, no antialiasing, lower resolution, fewer road dashes
+  const lite = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+
   useEffect(() => {
     onReady?.();
   }, [onReady]);
 
   return (
     <Canvas
-      shadows
-      dpr={[1, 1.5]}
+      shadows={!lite}
+      dpr={lite ? [1, 1.2] : [1, 1.5]}
       camera={{ position: [3.6, 2.9, 7.2], fov: 35 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      gl={{ antialias: !lite, powerPreference: "high-performance" }}
       style={{ position: "absolute", inset: 0 }}
     >
       <color attach="background" args={[BG]} />
@@ -371,8 +380,8 @@ export default function IntroScene({ onDone, onReady, avatar }) {
       <directionalLight
         position={[4, 7, 5]}
         intensity={2.2}
-        castShadow
-        shadow-mapSize={[1024, 1024]}
+        castShadow={!lite}
+        shadow-mapSize={lite ? [512, 512] : [1024, 1024]}
         shadow-camera-left={-6}
         shadow-camera-right={6}
         shadow-camera-top={6}
@@ -388,8 +397,8 @@ export default function IntroScene({ onDone, onReady, avatar }) {
         <planeGeometry args={[60, 2.4]} />
         <meshStandardMaterial color="#1b1b1f" roughness={1} />
       </mesh>
-      {Array.from({ length: 14 }, (_, i) => (
-        <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} position={[-20 + i * 3, 0.004, TRUCK_Z - 1.05]}>
+      {Array.from({ length: lite ? 6 : 14 }, (_, i) => (
+        <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} position={[-20 + i * (lite ? 7 : 3), 0.004, TRUCK_Z - 1.05]}>
           <planeGeometry args={[1.2, 0.06]} />
           <meshBasicMaterial color="#3a3a3f" />
         </mesh>

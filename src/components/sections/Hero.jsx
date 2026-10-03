@@ -154,7 +154,7 @@ export default function Hero() {
 
                       <h1 className="mt-6 text-text">
                         <Line i={2} className="font-logo text-[3.25rem] font-normal italic leading-[0.95] text-accent sm:text-7xl lg:text-[6.5rem]">
-                          AI Developer
+                          Full-Stack & AI Developer
                         </Line>
                         <Line i={3} className="mt-4 font-heading text-xl font-medium leading-tight tracking-tight sm:text-3xl lg:text-4xl">
                           I turn business problems into

@@ -1,5 +1,7 @@
 import Hero from "../components/sections/Hero";
 import PageSlide from "../components/layout/PageSlide";
+import HomeBackdrop from "../components/sections/HomeBackdrop";
+import Backed from "../components/sections/Backed";
 import ServicesCarousel from "../components/sections/ServicesCarousel";
 import FeaturedProjects from "../components/sections/FeaturedProjects";
 import SkillsPreview from "../components/sections/SkillsPreview";
@@ -12,11 +14,13 @@ export default function Home() {
     <IntroProvider>
       <Intro />
       <Hero />
+
       <PageSlide>
-        <ServicesCarousel />
-        <FeaturedProjects />
-        <SkillsPreview />
-        <CTASection />
+        <HomeBackdrop />
+        <Backed variant="services"><ServicesCarousel /></Backed>
+        <Backed variant="projects"><FeaturedProjects /></Backed>
+        <Backed variant="skills"><SkillsPreview /></Backed>
+        <Backed variant="cta"><CTASection /></Backed>
       </PageSlide>
     </IntroProvider>
   );
