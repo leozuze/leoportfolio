@@ -123,7 +123,19 @@ function Reveal({ index, stage, offsets, wrapRef, onSettled, className = "", chi
   );
 }
 
-function Chip({ name, icon: Icon }) {
+/* full chip (icon + name), or compact icon-only circle for narrow screens */
+function Chip({ name, icon: Icon, compact = false }) {
+  if (compact) {
+    return (
+      <div
+        title={name}
+        aria-label={name}
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-bg text-muted"
+      >
+        {Icon ? <Icon size={18} /> : <span className="font-mono text-[10px]">{name[0]}</span>}
+      </div>
+    );
+  }
   return (
     <div className="group flex items-center gap-2.5 rounded-xl border border-border bg-bg px-4 py-3 transition-colors hover:border-accent">
       {Icon && (
@@ -192,19 +204,22 @@ function Orbit({ skills, reduce }) {
   );
 }
 
-/* the marquee chips, travelling around a closed elliptical loop.
-   Positions are set straight on the DOM every frame (no React re-render). */
+/* the chips travelling around a closed elliptical loop.
+   Positions are set straight on the DOM every frame (no React re-render).
+   On narrow cards the chips become icon-only and the names move to pills below. */
 function ChipLoop({ tools, reduce }) {
   const box = useRef(null);
   const guide = useRef(null);
   const els = useRef([]);
   const size = useRef({ w: 700, h: 300 });
   const angle = useRef(0);
+  const [compact, setCompact] = useState(false);
 
   const place = () => {
     const { w, h } = size.current;
-    const rx = Math.max(70, w / 2 - 85);
-    const ry = Math.max(55, Math.min(h / 2 - 35, rx * 0.4));
+    const small = w < 560;
+    const rx = Math.max(60, small ? w / 2 - 40 : w / 2 - 85);
+    const ry = Math.max(50, Math.min(h / 2 - 30, rx * (small ? 0.5 : 0.4)));
     const n = tools.length;
 
     if (guide.current) {
@@ -229,6 +244,7 @@ function ChipLoop({ tools, reduce }) {
     const measure = () => {
       if (!box.current) return;
       size.current = { w: box.current.offsetWidth, h: box.current.offsetHeight };
+      setCompact(box.current.offsetWidth < 560);
       place();
     };
     measure();
@@ -245,31 +261,46 @@ function ChipLoop({ tools, reduce }) {
   });
 
   return (
-    <div ref={box} className="relative h-[280px] w-full md:h-[300px]">
-      <div
-        ref={guide}
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-dashed border-border"
-      />
+    <>
+      <div ref={box} className="relative h-[280px] w-full md:h-[300px]">
+        <div
+          ref={guide}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-dashed border-border"
+        />
 
-      <div className="absolute left-1/2 top-1/2 z-0 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/50 bg-bg font-mono text-[10px] font-semibold uppercase tracking-wider text-accent shadow-[0_0_40px_rgba(242,98,27,0.35)]">
-        {!reduce && (
-          <span className="absolute inset-0 animate-ping rounded-full border border-accent/40" />
-        )}
-        Ship
+        <div className="absolute left-1/2 top-1/2 z-0 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/50 bg-bg font-mono text-[10px] font-semibold uppercase tracking-wider text-accent shadow-[0_0_40px_rgba(242,98,27,0.35)]">
+          {!reduce && (
+            <span className="absolute inset-0 animate-ping rounded-full border border-accent/40" />
+          )}
+          Ship
+        </div>
+
+        {tools.map((c, i) => (
+          <div
+            key={c.name}
+            ref={(el) => {
+              els.current[i] = el;
+            }}
+            className="absolute left-1/2 top-1/2 will-change-transform"
+          >
+            <Chip {...c} compact={compact} />
+          </div>
+        ))}
       </div>
 
-      {tools.map((c, i) => (
-        <div
-          key={c.name}
-          ref={(el) => {
-            els.current[i] = el;
-          }}
-          className="absolute left-1/2 top-1/2 will-change-transform"
-        >
-          <Chip {...c} />
+      {compact && (
+        <div className="mt-2 flex flex-wrap justify-center gap-2">
+          {tools.map(({ name }) => (
+            <span
+              key={name}
+              className="rounded-full border border-border px-3 py-1 font-mono text-[11px] text-muted"
+            >
+              {name}
+            </span>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 }
 
