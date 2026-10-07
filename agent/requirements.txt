@@ -1,0 +1,10 @@
+llama-index-core
+llama-index-llms-groq
+llama-index-vector-stores-chroma
+chromadb
+gradio
+python-dotenv
+httpx
+fastapi
+uvicorn
+fastembed
