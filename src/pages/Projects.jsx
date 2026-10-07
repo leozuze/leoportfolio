@@ -5,6 +5,7 @@ import { projects } from "../data/projects";
 import { skillCategories } from "../data/skills";
 import { slugify } from "../lib/slugify";
 import ProjectCard from "../components/projects/ProjectCard";
+import Seo from "../components/Seo";
 
 const categories = ["All", ...new Set(projects.map((p) => p.category))];
 const categoryOrder = categories.filter((c) => c !== "All");
@@ -63,6 +64,12 @@ export default function Projects() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-20 md:py-28 overflow-x-hidden">
+      <Seo
+        title="Projects | Leo Zuze, AI & Full Stack Developer"
+        description="Live client websites, full stack apps and AI projects by Leo Zuze, including fraud detection tools, flight and places search, and business sites."
+        path="/projects"
+      />
+
       {/* Page header */}
       <motion.div
         initial="hidden"

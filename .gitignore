@@ -40,3 +40,7 @@ node_modules/.vite
 Thumbs.db
 .vercel
 .env*
+
+.venv
+--pycache--/
+storage/

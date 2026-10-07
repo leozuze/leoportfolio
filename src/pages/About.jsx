@@ -12,6 +12,7 @@ import { ArrowUpRight, Brain, Code2, MapPin, Rocket } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import heroImg from "../assets/images/heroimg.webp";
 import { WordReveal } from "../components/motion/primitives";
+import Seo from "../components/Seo";
 
 const EMAIL = "leonoelzuze@gmail.com";
 
@@ -38,12 +39,12 @@ const focusAreas = [
       "React and Tailwind on the frontend, Express and MongoDB on the backend, wired together so the models above actually reach a real interface.",
   },
   {
-  kicker: "AI Agents & RAG",
-  headline: "Assistants that actually know your data.",
-  icon: Rocket,
-  detail:
-    "RAG pipelines and AI agents built on your own documents and workflows not a generic chatbot wrapper, something that answers from your real data.",
-},
+    kicker: "AI Agents & RAG",
+    headline: "Assistants that actually know your data.",
+    icon: Rocket,
+    detail:
+      "RAG pipelines and AI agents built on your own documents and workflows not a generic chatbot wrapper, something that answers from your real data.",
+  },
 ];
 
 /* ---------- tapered arrow ---------- */
@@ -414,6 +415,12 @@ export default function About() {
 
   return (
     <div className="relative mx-auto max-w-6xl overflow-x-clip px-6 py-20 md:py-28">
+      <Seo
+        title="About Leo Zuze | Full Stack & AI Developer in Pune"
+        description="Leo Zuze builds full stack web apps and AI features, from messy data to a clean working interface. Second-year AI student at Vishwakarma University, Pune."
+        path="/about"
+      />
+
       <div aria-hidden="true" className="pointer-events-none absolute -top-10 right-0 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
 
       {/* Hero */}
@@ -439,11 +446,11 @@ export default function About() {
             </span>
           </h1>
 
-         <motion.p {...rise(2)} className="mt-6 max-w-md text-sm leading-relaxed text-muted md:text-base">
-          I design and build full-stack web apps and AI features from messy data to a clean,
-          working interface for people who need something real, not just a prototype. Currently
-          sharpening that edge as an AI & Fintech student at Vishwakarma University, Pune.
-        </motion.p>
+          <motion.p {...rise(2)} className="mt-6 max-w-md text-sm leading-relaxed text-muted md:text-base">
+            I design and build full-stack web apps and AI features from messy data to a clean,
+            working interface for people who need something real, not just a prototype. Currently
+            sharpening that edge as an AI & Fintech student at Vishwakarma University, Pune.
+          </motion.p>
 
           <motion.div {...rise(3)} className="mt-8 grid max-w-md grid-cols-2 gap-4">
             {quickFacts.map(({ label, value }) => (
@@ -550,7 +557,7 @@ export default function About() {
         className="mb-10 mt-28 md:mt-36"
       >
         <p className="mb-2 font-mono text-xs uppercase tracking-widest text-accent">What I can build for you</p>
-<h2 className="font-heading text-2xl font-bold text-text md:text-3xl">Three ways I can help</h2>
+        <h2 className="font-heading text-2xl font-bold text-text md:text-3xl">Three ways I can help</h2>
       </motion.div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

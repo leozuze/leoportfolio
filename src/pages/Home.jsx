@@ -8,10 +8,16 @@ import SkillsPreview from "../components/sections/SkillsPreview";
 import CTASection from "../components/sections/CTASection";
 import Intro from "../components/intro/Intro";
 import { IntroProvider } from "../components/intro/IntroContext";
+import Seo from "../components/Seo";
 
 export default function Home() {
   return (
     <IntroProvider>
+      <Seo
+        title="Leo Zuze | AI & Fintech Developer, Full Stack Engineer"
+        description="Leo Zuze is an AI and fintech developer in Pune, India. Full stack web apps with React and Express, plus machine learning and AI agents for real businesses."
+        path="/"
+      />
       <Intro />
       <Hero />
 

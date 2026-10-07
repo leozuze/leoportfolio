@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { skillCategories } from "../data/skills";
+import Seo from "../components/Seo";
 
 export default function Skills() {
   const shouldReduceMotion = useReducedMotion();
@@ -25,6 +26,12 @@ export default function Skills() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-20 md:py-28 overflow-x-hidden">
+      <Seo
+        title="Skills & Tools | Leo Zuze, AI & Full Stack Developer"
+        description="Python, Pandas, scikit-learn and model training, plus React, Express, MongoDB and the tools used to build and ship full stack apps."
+        path="/skills"
+      />
+
       <motion.div
         initial="hidden"
         whileInView="visible"

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Mail, Send, Check } from "lucide-react";
 import { FaGithub, FaLinkedin, FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import Seo from "../components/Seo";
 
 const EMAIL = "leonoelzuze@gmail.com";
 const PHONE = "+91 97645 06058";
@@ -71,6 +72,12 @@ export default function Contact() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-20 md:py-28 overflow-x-hidden">
+      <Seo
+        title="Contact Leo Zuze | Start a Project"
+        description="Get in touch with Leo Zuze by WhatsApp, email or the contact form to start a website, full stack app or AI project."
+        path="/contact"
+      />
+
       {/* Page header */}
       <motion.div
         initial="hidden"
