@@ -87,8 +87,9 @@ def list_github_repos() -> str:
 
 def get_github_repo(repo_name: str) -> str:
     """Get details of one of Leo's public GitHub repositories: description, languages,
-    topics, and the start of its README. Pass just the repository name, for example
-    'skyscout'."""
+    topics, and the start of its README. Pass just the repository name. Project names
+    and repository names often differ, so if you are not sure of the exact name, call
+    list_github_repos first and pick the matching repository."""
     repo_name = repo_name.strip().split("/")[-1]
     if not _REPO_NAME.match(repo_name) or set(repo_name) <= {"."}:
         return "Invalid repository name."

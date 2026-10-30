@@ -12,6 +12,8 @@ Projects are split into two groups: **live** (deployed, link works right now) an
 
 ## NevuX (SkyScout)
 
+**GitHub repo:** Flight-Finder (public)
+
 **Live:** https://skyscout-sepia.vercel.app
 **Stack:** Python backend, React frontend, SerpAPI, AviationStack, Geoapify, OpenStreetMap, Mapillary, Wikipedia, Leaflet
 
@@ -24,6 +26,8 @@ A full-stack travel platform for people who love to travel — find flights, dis
 A website for a construction company, built to showcase their completed work and let prospective customers get a quote directly through the site. A real client-facing project combining a polished portfolio/showcase experience with a functional lead-generation flow (the quote request).
 
 ## Talitha Cumi Accessories
+
+**GitHub repo:** Talitha-Cumi-Accessories (public)
 
 **Live:** https://talitha-cumi-accessories.vercel.app
 **Stack:** React, Vite, JavaScript
@@ -38,6 +42,8 @@ Do not give out a URL for any project in this section, and do not say they can b
 
 ## Nexus Lending
 
+**GitHub repo:** Nexus-Lending (public, front-end code only)
+
 **Status:** Concept project, not deployed anywhere.
 **Stack:** React 19, Vite, Tailwind CSS, Framer Motion, AOS, Lucide React
 
@@ -46,6 +52,8 @@ A fintech lending platform concept designed around the idea of using AI and alte
 It reflects Leo's core thesis (AI-driven financial access), but it is a design and front-end concept, not a working product.
 
 ## ATO Shield
+
+**GitHub repo:** ATO-Shield (public)
 
 **Status:** In development, no live link yet.
 

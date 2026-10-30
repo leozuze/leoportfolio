@@ -31,7 +31,7 @@ def build_agent() -> FunctionAgent:
         name="portfolio_agent",
         description="Answers questions about Leo Zuze's work, services and GitHub.",
         tools=tools,
-        llm=llm.get_llm(config.GROQ_MODEL, config.ANSWER_MAX_TOKENS, temperature=0.3),
+        llm=llm.get_llm(config.GROQ_MODEL, config.ANSWER_MAX_TOKENS, temperature=0.1),
         system_prompt=SYSTEM_PROMPT,
     )
 
@@ -63,6 +63,16 @@ def friendly_error(e: Exception) -> str:
     return "Something went wrong while answering. Please try again."
 
 
+_HYPHENS = {"\u2010": "-", "\u2011": "-"}
+
+
+def clean_text(text: str) -> str:
+    """gpt-oss sometimes writes non-breaking hyphens, which silently break copied links."""
+    for bad, good in _HYPHENS.items():
+        text = text.replace(bad, good)
+    return text
+
+
 async def ask(agent: FunctionAgent, question: str, history: list[dict] | None = None):
     """Async generator of AgentEvent. The last event is 'final' or 'error'."""
     answer = ""
@@ -78,12 +88,12 @@ async def ask(agent: FunctionAgent, question: str, history: list[dict] | None = 
                 yield AgentEvent("tool_call", name=ev.tool_name, args=dict(ev.tool_kwargs))
             elif isinstance(ev, ToolCallResult):
                 yield AgentEvent(
-                    "tool_result", name=ev.tool_name, text=str(ev.tool_output.content)[:2000]
+                    "tool_result", name=ev.tool_name, text=str(ev.tool_output.content)[:6000]
                 )
             elif isinstance(ev, AgentStream):
                 answer += ev.delta or ""
-                yield AgentEvent("token", text=answer)
+                yield AgentEvent("token", text=clean_text(answer))
         result = await handler
-        yield AgentEvent("final", text=(str(result).strip() or answer.strip()))
+        yield AgentEvent("final", text=clean_text(str(result).strip() or answer.strip()))
     except Exception as e:  # noqa: BLE001 - surface any failure to the UI
         yield AgentEvent("error", text=friendly_error(e), detail=f"{type(e).__name__}: {e}")

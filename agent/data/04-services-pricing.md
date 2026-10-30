@@ -2,6 +2,13 @@
 
 Leo takes on freelance and contract work across four areas. Final pricing depends on project scope and is always discussed directly — the figures below are starting points, not fixed quotes.
 
+**Overview of all services**
+- Frontend Development: from $100
+- Full-Stack Web Development: from $150
+- Data Analysis & Dashboards: from $170
+- AI Agents, RAG & AI-Powered Features: pricing is flexible and scoped around what is needed; best discussed directly
+Final prices depend on project scope and are open to negotiation.
+
 ## Frontend Development
 *Fast, responsive websites that look sharp on every screen.*
 

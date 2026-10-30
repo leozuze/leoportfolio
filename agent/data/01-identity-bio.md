@@ -23,3 +23,15 @@ Leo is originally from Zimbabwe and holds a Presidential Scholarship from the Go
 ## Working style
 
 Leo works end-to-end on his projects — from idea, through data and model work, to a live, deployed interface a real user can open. He's equally comfortable in the AI/data layer (Python, model training, RAG pipelines) and the product layer (React, full-stack web apps), which is what lets him own a project from concept to launch without needing to hand off pieces to someone else.
+
+## Quick facts
+
+- Name: Leo Noel Zuze (known as Leo Zuze; community handle "Jayz" / "jayztheplug")
+- Age: 20 years old
+- Based in: Pune, India
+- Originally from: Zimbabwe
+- Role: AI Fintech Developer and Full-Stack Developer
+- Specialization: AI agents, RAG pipelines and AI-powered workflows
+- Education: BTech in AI at Vishwakarma University, Pune (cumulative GPA 9.0/10.0)
+- Scholarship: Presidential Scholarship from the Government of Zimbabwe (2025-2029)
+- A-levels: 15/15 points at Kondo High School, Guruve (Zimsec)
