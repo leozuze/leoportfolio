@@ -1,0 +1,72 @@
+[
+  {
+    "q": "Is Nexus Lending live? Can I open it?",
+    "must_contain": [
+      "Nexus Lending",
+      "not deployed"
+    ],
+    "must_not_contain": [
+      "nexus-lending.vercel.app"
+    ]
+  },
+  {
+    "q": "Which projects can I open right now?",
+    "must_contain": [
+      "skyscout-sepia.vercel.app",
+      "jamco-builders.vercel.app"
+    ],
+    "must_not_contain": [
+      "including Nexus Lending"
+    ]
+  },
+  {
+    "q": "Tell me about the travel project and the construction company website",
+    "must_contain": [
+      "skyscout",
+      "jamco"
+    ]
+  },
+  {
+    "q": "How much does a basic website cost?",
+    "must_contain": [
+      "$100"
+    ]
+  },
+  {
+    "q": "What does he charge for a dashboard?",
+    "must_contain": [
+      "$170"
+    ]
+  },
+  {
+    "q": "What does AI agent work cost?",
+    "must_contain": [
+      "flexible"
+    ]
+  },
+  {
+    "q": "Does he build AI agents and RAG systems?",
+    "must_contain": [
+      "RAG"
+    ]
+  },
+  {
+    "q": "What frontend tools does he use?",
+    "must_contain": [
+      "Tailwind"
+    ]
+  },
+  {
+    "q": "Where does he come from and what scholarship does he hold?",
+    "must_contain": [
+      "Presidential Scholarship"
+    ]
+  },
+  {
+    "q": "How can I contact him and is he available for freelance work?",
+    "must_contain": [
+      "leonoelzuze@gmail.com",
+      "available"
+    ]
+  }
+]
