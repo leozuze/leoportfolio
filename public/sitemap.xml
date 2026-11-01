@@ -1,8 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://leozuzedev.vercel.app/</loc></url>
-  <url><loc>https://leozuzedev.vercel.app/about</loc></url>
-  <url><loc>https://leozuzedev.vercel.app/projects</loc></url>
-  <url><loc>https://leozuzedev.vercel.app/skills</loc></url>
-  <url><loc>https://leozuzedev.vercel.app/contact</loc></url>
+<urlset xmlns="http://sitemaps.org">
+  <url>
+    <loc>https://leozuze.com</loc>
+    <priority>1.00</priority>
+  </url>
+  <url>
+    <loc>https://leozuze.comabout</loc>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://leozuze.comprojects</loc>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://leozuze.comservices</loc>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://leozuze.comskills</loc>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://leozuze.comcontact</loc>
+    <priority>0.60</priority>
+  </url>
 </urlset>
