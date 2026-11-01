@@ -1,6 +1,10 @@
 {
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/((?!sitemap\\.xml|robots\\.txt|assets/).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
