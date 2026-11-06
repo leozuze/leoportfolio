@@ -2,7 +2,7 @@
 
 A modern portfolio showcasing **AI, fintech development, and full-stack engineering** work. Built with React, Vite, and Tailwind CSS, featuring smooth animations, responsive design, and seamless project browsing.
 
-**Live:** [leozuzedev.vercel.app](https://leozuzedev.com)
+**Live:** [leozuzedev.vercel.app](https://leozuze.com)
 
 ---
 
