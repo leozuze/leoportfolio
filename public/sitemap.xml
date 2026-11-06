@@ -1,27 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://sitemaps.org">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://leozuze.com</loc>
-    <priority>1.00</priority>
+    <loc>https://leozuze.com/</loc>
   </url>
   <url>
-    <loc>https://leozuze.comabout</loc>
-    <priority>0.80</priority>
+    <loc>https://leozuze.com/about</loc>
   </url>
   <url>
-    <loc>https://leozuze.comprojects</loc>
-    <priority>0.80</priority>
+    <loc>https://leozuze.com/projects</loc>
   </url>
   <url>
-    <loc>https://leozuze.comservices</loc>
-    <priority>0.80</priority>
+    <loc>https://leozuze.com/services</loc>
   </url>
   <url>
-    <loc>https://leozuze.comskills</loc>
-    <priority>0.70</priority>
+    <loc>https://leozuze.com/skills</loc>
   </url>
   <url>
-    <loc>https://leozuze.comcontact</loc>
-    <priority>0.60</priority>
+    <loc>https://leozuze.com/contact</loc>
   </url>
 </urlset>

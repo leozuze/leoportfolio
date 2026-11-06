@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://leozuze.com
+Sitemap: https://leozuze.com/sitemap.xml
