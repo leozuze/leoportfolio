@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SITE = "https://leozuzedev.vercel.app";
+const SITE = "https://leozuze.com/";
 
 function setMeta(attr, key, content) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`);
