@@ -1,7 +1,9 @@
-import { createContext, useCallback, useContext, useState } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 const KEY = "leo-intro-seen";
-const ALWAYS_PLAY = import.meta.env.DEV; // play on every refresh while developing
+// plays on every refresh while developing; set to false to test once-per-session
+const ALWAYS_PLAY = import.meta.env.DEV;
 
 const read = () => {
   try {
@@ -26,11 +28,17 @@ export function IntroProvider({ children }) {
   const finish = useCallback(() => {
     try {
       sessionStorage.setItem(KEY, "1");
-    } catch {}
+    } catch {
+      /* storage is blocked, so the intro may replay next visit. That is fine. */
+    }
     setDone(true);
   }, []);
 
-  return <Ctx.Provider value={{ done, finish }}>{children}</Ctx.Provider>;
+  const value = useMemo(() => ({ done, finish }), [done, finish]);
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-export const useIntro = () => useContext(Ctx);
+export function useIntro() {
+  return useContext(Ctx);
+}

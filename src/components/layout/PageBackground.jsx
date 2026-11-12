@@ -1,64 +1,55 @@
-import { lazy, Suspense } from "react";
 import { useLocation } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { useIsMobile } from "../../hooks/useIsMobile";
-import { Cube, Rings } from "../ui/Wireframes";
+import { motion } from "framer-motion";
+import { FlowLines } from "../ui/Curves";
 
-const PageShader = lazy(() => import("./PageShader"));
-
-const WARM = ["#F2621B", "#FFC542", "#6b250a", "#2a1006"];
-
-// One look per page. Tweak scale / offsetX / offsetY to move the pattern around.
+// One flat look per page: a sand panel with fine flowing lines and one outlined shape.
 const VARIANTS = {
-  about:    { shape: "wave",    colors: WARM, scale: 1.2, offsetX: -0.3, offsetY: 0.1, rotation: 20, object: "rings", pos: "right-[8%] top-[24%]" },
-  projects: { shape: "ripple",  colors: WARM, scale: 1.1, offsetX: 0.4,  offsetY: -0.1, object: "cube",  pos: "left-[6%] top-[30%]" },
-  services: { shape: "corners", colors: WARM, scale: 1.0, offsetX: 0,    offsetY: 0,    object: "cube",  pos: "right-[10%] top-[20%]" },
-  skills:   { shape: "dots",    colors: WARM, scale: 0.7, offsetX: 0.2,  offsetY: 0,    intensity: 0.35, object: "rings", pos: "left-[8%] top-[26%]" },
-  contact:  { shape: "blob",    colors: WARM, scale: 1.1, offsetX: -0.4, offsetY: 0.1,  object: "cube",  pos: "right-[10%] top-[28%]" },
-  lost:     { shape: "sphere",  colors: WARM, scale: 1.0, offsetX: 0,    offsetY: 0,    object: "rings", pos: "right-[14%] top-[22%]" },
+  about:    { side: "right", lines: 6, accent: 2, shape: "ring" },
+  projects: { side: "left",  lines: 7, accent: 4, shape: "diamond" },
+  services: { side: "right", lines: 5, accent: 1, shape: "diamond" },
+  skills:   { side: "left",  lines: 6, accent: 3, shape: "ring" },
+  contact:  { side: "right", lines: 7, accent: 5, shape: "ring" },
+  lost:     { side: "right", lines: 4, accent: 1, shape: "diamond" },
 };
 
 export default function PageBackground() {
   const { pathname } = useLocation();
-  const reduce = useReducedMotion();
-  const mobile = useIsMobile();
-  const { scrollY } = useScroll();
-  const shaderY = useTransform(scrollY, [0, 2500], [0, -140]);
-  const objY = useTransform(scrollY, [0, 2500], [0, -380]);
-
   const seg = pathname.split("/")[1];
-  if (seg === "") return null; // Home keeps its own hero shader
+  if (seg === "") return null; // Home draws its own hero
+
   const v = VARIANTS[seg] ?? VARIANTS.lost;
-  const Obj = v.object === "cube" ? Cube : Rings;
+  const right = v.side === "right";
 
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] overflow-hidden"
+    >
       <motion.div
         key={seg}
-        className="absolute inset-x-0 -inset-y-40"
-        style={reduce ? undefined : { y: shaderY }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.55 }}
-        transition={{ duration: 1.4 }}
-      >
-        <Suspense fallback={null}>
-          <PageShader v={v} mobile={mobile} paused={reduce} />
-        </Suspense>
-      </motion.div>
-
-      {/* fades toward the bottom so text stays readable */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg/30 to-bg" />
-
-      <motion.div
-        key={`${seg}-obj`}
-        className={`absolute hidden sm:block ${v.pos}`}
-        style={reduce ? undefined : { y: objY }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, delay: 0.4 }}
+        transition={{ duration: 0.8 }}
+        className={`absolute inset-y-0 hidden w-[34%] bg-sand md:block ${
+          right ? "right-0" : "left-0"
+        }`}
       >
-        <Obj />
+        <FlowLines className="text-ink/25" count={v.lines} accentLine={v.accent} delay={0.3} />
       </motion.div>
+
+      {v.shape === "ring" ? (
+        <div
+          className={`absolute top-28 hidden h-72 w-72 rounded-full border border-ink/10 md:block ${
+            right ? "left-[6%]" : "right-[6%]"
+          }`}
+        />
+      ) : (
+        <div
+          className={`absolute top-40 hidden h-44 w-44 rotate-45 border border-ink/10 md:block ${
+            right ? "left-[10%]" : "right-[10%]"
+          }`}
+        />
+      )}
     </div>
   );
 }

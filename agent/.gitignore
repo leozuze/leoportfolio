@@ -1,11 +1,13 @@
+# Secrets (.env.example stays tracked on purpose)
 .env
-.env.example
 .env.local
+
+# Python
 .venv/
---pycache__/
-stiorage/
 __pycache__/
 *.pyc
+
+# Runtime data, never committed
 storage/
 .cache/
 tests/reports/

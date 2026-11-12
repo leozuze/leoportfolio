@@ -10,7 +10,7 @@ import {
 } from "framer-motion";
 import { ArrowUpRight, Brain, Code2, MapPin, Rocket } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import heroImg from "../assets/images/heroimg.webp";
+import heroImg from "../assets/images/hero-cutout.webp";
 import { WordReveal } from "../components/motion/primitives";
 import Seo from "../components/Seo";
 

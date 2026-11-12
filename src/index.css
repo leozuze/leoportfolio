@@ -1,24 +1,56 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist Variable", system-ui, sans-serif;
-  --font-heading: "Geist Variable", system-ui, sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
-  --font-logo: "Instrument Serif", serif;
+  --font-sans: "Plus Jakarta Sans Variable", system-ui, sans-serif;
+  --font-heading: "Plus Jakarta Sans Variable", system-ui, sans-serif;
+  --font-logo: "Plus Jakarta Sans Variable", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
-  --color-bg: #141416;
-  --color-surface: #1D1D20;
-  --color-border: #2B2B2E;
-  --color-text: #FAFAF8;
-  --color-muted: #9C9C98;
-  --color-accent: #F2621B;
-  --color-accent-2: #FFC542;
+  --color-bg: #F5F0E6;
+  --color-surface: #FFFDF8;
+  --color-sand: #EAE3D2;
+  --color-border: #E2DACA;
+  --color-text: #16140F;
+  --color-muted: #6A6458;
+
+  --color-accent: #C4322B;
+  --color-accent-2: #A32A24;
+  --color-accent-soft: #FF7A6B;
+
+  --color-ink: #16140F;
+  --color-on-ink: #F5F0E6;
+  --color-on-accent: #FFFDF8;
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 55s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes marquee-reverse {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
 }
 
-/* stop any section from making the page wider than the screen.
-   clip (not hidden) so position: sticky keeps working */
 html,
 body {
   max-width: 100%;
   overflow-x: clip;
+  overscroll-behavior-x: none;
+  color-scheme: light;
+}
+
+::selection {
+  background: rgb(196 50 43 / 0.2);
 }

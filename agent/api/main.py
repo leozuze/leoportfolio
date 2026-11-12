@@ -1,23 +1,25 @@
 """HTTP API for JayZ, Leo Zuze's portfolio assistant.
 
 Run from the agent directory:
-    python -m uvicorn api.main:app --reload --port 8000
+    python -m uvicorn api.main:app --port 8000
 """
 
 import asyncio
 import json
 import logging
 import os
+import secrets
 from contextlib import asynccontextmanager
 from typing import Annotated, Literal
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from app import config, llm
+from app import config
 from app.agent import ask, build_agent
+from app.sync import KnowledgeStore
 
 
 logger = logging.getLogger("uvicorn.error")
@@ -67,6 +69,12 @@ class ChatResponse(BaseModel):
     reply: str
 
 
+class IntervalRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    hours: float = Field(ge=config.SYNC_MIN_INTERVAL_HOURS, le=720)
+
+
 # ---------------------------------------------------------------------------
 # Startup and shutdown
 # ---------------------------------------------------------------------------
@@ -74,19 +82,24 @@ class ChatResponse(BaseModel):
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     application.state.agent = None
+    store = KnowledgeStore()
+    application.state.store = store
 
-    logger.info("Loading portfolio embeddings and agent...")
+    logger.info("Loading portfolio knowledge...")
 
-    # Load the embedding model and existing Chroma collection once.
-    # Ingestion remains a separate command: python -m app.ingest
-    llm.configure_embeddings()
-    application.state.agent = build_agent()
+    # First sync before serving. If it fails the server still starts, the search tool
+    # reports "still loading", and the background loop retries every minute.
+    await store.sync("startup")
+    store.start()
+
+    application.state.agent = build_agent(store)
 
     logger.info("JayZ portfolio assistant is ready.")
 
     try:
         yield
     finally:
+        await store.stop()
         application.state.agent = None
         logger.info("JayZ portfolio assistant stopped.")
 
@@ -104,6 +117,7 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 
 # app.config loads agent/.env before this setting is read.
+# Updated properly in step 7 (leozuze.com and the local ports).
 DEFAULT_FRONTEND_ORIGINS = (
     "https://leozuzedev.vercel.app,"
     "http://localhost:5173,"
@@ -156,6 +170,23 @@ def encode_event(data: dict) -> str:
     return json.dumps(data, ensure_ascii=False) + "\n"
 
 
+def require_admin(request: Request) -> None:
+    """Bearer-token check for the sync admin endpoints."""
+    token = config.ADMIN_TOKEN
+
+    if not token:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin endpoints are disabled. Set ADMIN_TOKEN to enable them.",
+        )
+
+    header = request.headers.get("authorization", "")
+    supplied = header[7:] if header.lower().startswith("bearer ") else ""
+
+    if not secrets.compare_digest(supplied.encode("utf-8"), token.encode("utf-8")):
+        raise HTTPException(status_code=401, detail="Unauthorized.")
+
+
 # ---------------------------------------------------------------------------
 # Health
 # ---------------------------------------------------------------------------
@@ -163,7 +194,31 @@ def encode_event(data: dict) -> str:
 @app.get("/health")
 async def health(request: Request):
     get_agent(request)
-    return {"status": "ok"}
+    store: KnowledgeStore = request.app.state.store
+    return {"status": "ok", "knowledge_ready": store.retriever is not None}
+
+
+# ---------------------------------------------------------------------------
+# Sync admin
+# ---------------------------------------------------------------------------
+
+@app.get("/api/sync/status", dependencies=[Depends(require_admin)])
+async def sync_status(request: Request):
+    return request.app.state.store.status()
+
+
+@app.post("/api/sync", dependencies=[Depends(require_admin)])
+async def sync_now(request: Request):
+    store: KnowledgeStore = request.app.state.store
+    await store.sync("manual")
+    return store.status()
+
+
+@app.put("/api/sync/interval", dependencies=[Depends(require_admin)])
+async def sync_interval(payload: IntervalRequest, request: Request):
+    store: KnowledgeStore = request.app.state.store
+    store.set_interval(payload.hours)
+    return store.status()
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +228,7 @@ async def health(request: Request):
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest, request: Request):
     agent = get_agent(request)
+    request.app.state.store.touch()
     history = get_history(payload)
 
     final_answer = ""
@@ -228,6 +284,7 @@ async def chat(payload: ChatRequest, request: Request):
 @app.post("/api/chat/stream")
 async def stream_chat(payload: ChatRequest, request: Request):
     agent = get_agent(request)
+    request.app.state.store.touch()
     history = get_history(payload)
 
     async def events():

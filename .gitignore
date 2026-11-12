@@ -49,3 +49,4 @@ agent/.cache/
 
 # Application Storage
 agent/storage/
+public/agent-knowledge.json

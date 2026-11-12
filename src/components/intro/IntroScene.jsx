@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
-import { Phone, PhoneOff } from "lucide-react";
 
-// ---- look ----
-const BG = "#0f0f11"; // match your Tailwind `bg` color
-const ACCENT = "#F2621B";
-const BODY = "#1c1c20";
-const WOOD = "#8a5a3b";
+// ---- look: matches the site palette ----
+const BG = "#F5F0E6";
+const ACCENT = "#C4322B";
+const BODY = "#2B2822";
+const WOOD = "#B89A72";
+const ROAD = "#E3DAC8";
 
 // ---- timeline (seconds) ----
 const T = {
@@ -18,8 +18,8 @@ const T = {
   stowEnd: 3.0, // boom swings back
   lidStart: 2.6,
   lidEnd: 3.15,
-  ring: 3.15, // "Incoming call"
-  connected: 3.95,
+  ring: 3.15, // welcome card appears on the laptop
+  connected: 3.95, // loading bar fills, "Opening portfolio"
   leaveStart: 2.9, // truck pulls away once the boom is folded
   leaveEnd: 4.2, // and is fully out of frame
   zoomStart: 4.2,
@@ -30,14 +30,14 @@ export const INTRO_MS = T.end * 1000;
 // ---- layout (world units, ground is y = 0) ----
 const TRUCK_Z = -1.5;
 const TRUCK_START_X = -10;
-const TRUCK_EXIT_X = 22; // how far past centre it drives before it's gone
-const BED_X = -0.9; // laptop spot on the truck bed (truck-local x)
+const TRUCK_EXIT_X = 22;
+const BED_X = -0.9;
 const BED_TOP = 1.02;
-const MAST = new THREE.Vector3(0.35, 2.05, 0); // boom pivot (truck-local)
+const MAST = new THREE.Vector3(0.35, 2.05, 0);
 const BENCH_Z = 1.25;
 const BENCH_TOP = 0.9;
 const WHEEL_R = 0.42;
-const HOOK_DROP = 0.85; // cable length while carrying
+const HOOK_DROP = 0.85;
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
 const prog = (t, a, b) => clamp01((t - a) / (b - a));
@@ -63,16 +63,16 @@ function Wheel({ position, wheelRef }) {
     <group position={position} ref={wheelRef}>
       <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
         <cylinderGeometry args={[WHEEL_R, WHEEL_R, 0.32, 28]} />
-        <meshStandardMaterial color="#111" roughness={0.9} />
+        <meshStandardMaterial color="#16140F" roughness={0.9} />
       </mesh>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.22, 0.22, 0.34, 20]} />
-        <meshStandardMaterial color="#9c9c98" metalness={0.6} roughness={0.35} />
+        <meshStandardMaterial color="#B9B3A6" metalness={0.5} roughness={0.4} />
       </mesh>
       {/* spoke so you can see it roll */}
       <mesh>
         <boxGeometry args={[0.4, 0.06, 0.35]} />
-        <meshStandardMaterial color="#555" />
+        <meshStandardMaterial color="#6A6458" />
       </mesh>
     </group>
   );
@@ -98,7 +98,7 @@ function Truck({ truckRef, bodyRef, wheels }) {
         <RoundedBox args={[1.35, 1.25, 1.55]} radius={0.12} position={[1.45, 1.35, 0]} castShadow>
           <meshStandardMaterial color={ACCENT} roughness={0.45} />
         </RoundedBox>
-        {/* windscreen + side windows */}
+        {/* windscreen + side window */}
         <mesh position={[2.13, 1.6, 0]}>
           <boxGeometry args={[0.02, 0.5, 1.3]} />
           <meshStandardMaterial color="#20262c" metalness={0.8} roughness={0.15} />
@@ -107,17 +107,17 @@ function Truck({ truckRef, bodyRef, wheels }) {
           <boxGeometry args={[0.7, 0.45, 0.02]} />
           <meshStandardMaterial color="#20262c" metalness={0.8} roughness={0.15} />
         </mesh>
-        {/* headlights */}
+        {/* headlights: flat, no glow */}
         {[-0.55, 0.55].map((z) => (
           <mesh key={z} position={[2.13, 0.95, z]}>
             <boxGeometry args={[0.03, 0.14, 0.24]} />
-            <meshStandardMaterial color="#fff6e0" emissive="#ffd9a0" emissiveIntensity={2} />
+            <meshStandardMaterial color="#FFFDF8" roughness={0.5} />
           </mesh>
         ))}
         {/* flatbed */}
         <mesh position={[-0.75, 0.86, 0]} castShadow receiveShadow>
           <boxGeometry args={[2.9, 0.16, 1.55]} />
-          <meshStandardMaterial color="#2a2a30" roughness={0.7} />
+          <meshStandardMaterial color="#3A352C" roughness={0.7} />
         </mesh>
         {/* boom mast */}
         <mesh position={[MAST.x, (0.94 + MAST.y) / 2, 0]} castShadow>
@@ -144,77 +144,74 @@ function Bench() {
       {legs.map(([x, z]) => (
         <mesh key={`${x}${z}`} position={[x, (BENCH_TOP - 0.12) / 2, z]} castShadow>
           <boxGeometry args={[0.1, BENCH_TOP - 0.12, 0.1]} />
-          <meshStandardMaterial color="#2b2b2e" metalness={0.5} roughness={0.4} />
+          <meshStandardMaterial color={BODY} metalness={0.4} roughness={0.5} />
         </mesh>
       ))}
       <mesh position={[0, 0.25, 0]}>
         <boxGeometry args={[2.8, 0.05, 0.05]} />
-        <meshStandardMaterial color="#2b2b2e" metalness={0.5} roughness={0.4} />
+        <meshStandardMaterial color={BODY} metalness={0.4} roughness={0.5} />
       </mesh>
     </group>
   );
 }
 
-function CallScreen({ phase, avatar }) {
-  const ring = phase === 1;
+/* What the laptop shows: a clean welcome card, then a loading bar */
+function WelcomeScreen({ phase, avatar }) {
+  const opening = phase === 2;
   return (
     <div
       style={{
         width: 260,
         height: 166,
+        boxSizing: "border-box",
+        padding: "0 22px",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        gap: 6,
-        background: "#0b0b0d",
-        color: "#f4f4f2",
+        gap: 9,
+        background: "#FFFDF8",
+        color: "#16140F",
         fontFamily: "ui-sans-serif, system-ui, sans-serif",
         userSelect: "none",
         pointerEvents: "none",
       }}
     >
-      <style>{`
-        @keyframes li-ping{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.9);opacity:0}}
-        @keyframes li-pulse{50%{transform:scale(1.18)}}
-        @keyframes li-bar{0%,100%{height:6px}25%{height:18px}50%{height:8px}75%{height:14px}}
-      `}</style>
-      <div style={{ position: "relative", width: 48, height: 48 }}>
-        {ring &&
-          [0, 0.5].map((d) => (
-            <span
-              key={d}
-              style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "50%",
-                border: `1px solid ${ACCENT}`,
-                animation: `li-ping 1.4s ${d}s infinite`,
-              }}
-            />
-          ))}
-        <img src={avatar} alt="" style={{ position: "relative", width: 48, height: 48, borderRadius: "50%", objectFit: "cover", background: "#222" }} />
+      <style>{`@keyframes li-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}`}</style>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <img
+          src={avatar}
+          alt=""
+          style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", background: "#E2DACA" }}
+        />
+        <div>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800 }}>Leo Zuze</p>
+          <p style={{ margin: 0, fontSize: 8.5, color: "#6A6458" }}>AI engineer &amp; full-stack developer</p>
+        </div>
       </div>
-      <p style={{ margin: 0, fontSize: 12, fontWeight: 600 }}>Leo Zuze</p>
-      <p style={{ margin: 0, fontFamily: "ui-monospace, monospace", fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: "#9c9c98" }}>
-        {ring ? "Incoming call…" : "Connected"}
+      <p
+        style={{
+          margin: 0,
+          fontSize: 7.5,
+          fontWeight: 700,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          color: "#C4322B",
+        }}
+      >
+        Freelance · Available for new projects
       </p>
-      {ring ? (
-        <div style={{ display: "flex", gap: 16, marginTop: 2 }}>
-          <span style={{ display: "flex", padding: 7, borderRadius: "50%", border: "1px solid #2b2b2e", color: "#9c9c98" }}>
-            <PhoneOff size={13} />
-          </span>
-          <span style={{ display: "flex", padding: 7, borderRadius: "50%", background: ACCENT, color: "#0b0b0d", animation: "li-pulse .8s infinite" }}>
-            <Phone size={13} />
-          </span>
-        </div>
-      ) : (
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 20, marginTop: 2 }}>
-          {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} style={{ width: 4, height: 6, borderRadius: 4, background: ACCENT, animation: `li-bar .9s ${i * 0.1}s infinite` }} />
-          ))}
-        </div>
-      )}
+      <div style={{ height: 3, background: "#E2DACA" }}>
+        <div
+          style={{
+            height: 3,
+            background: "#C4322B",
+            transformOrigin: "left",
+            transform: opening ? undefined : "scaleX(0)",
+            animation: opening ? "li-fill 0.9s linear forwards" : "none",
+          }}
+        />
+      </div>
+      <p style={{ margin: 0, fontSize: 8, color: "#6A6458" }}>{opening ? "Opening portfolio…" : "Welcome"}</p>
     </div>
   );
 }
@@ -226,25 +223,25 @@ function Laptop({ laptopRef, lidRef, glowRef, phase, avatar }) {
     <group ref={laptopRef}>
       {/* base */}
       <RoundedBox args={[W, 0.06, D]} radius={0.02} position={[0, 0.03, 0]} castShadow>
-        <meshStandardMaterial color="#c9c9cc" metalness={0.7} roughness={0.3} />
+        <meshStandardMaterial color="#D4D4D6" metalness={0.6} roughness={0.35} />
       </RoundedBox>
       <mesh position={[0, 0.061, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[W * 0.86, D * 0.5]} />
-        <meshStandardMaterial color="#26262a" roughness={0.8} />
+        <meshStandardMaterial color="#2B2822" roughness={0.8} />
       </mesh>
       {/* lid, hinged at the back edge */}
       <group ref={lidRef} position={[0, 0.06, -D / 2]}>
         <RoundedBox args={[W, 0.04, D]} radius={0.015} position={[0, 0.02, D / 2]} castShadow>
-          <meshStandardMaterial color="#c9c9cc" metalness={0.7} roughness={0.3} />
+          <meshStandardMaterial color="#D4D4D6" metalness={0.6} roughness={0.35} />
         </RoundedBox>
         {/* screen on the underside */}
         <mesh position={[0, -0.001, D / 2]} rotation={[Math.PI / 2, 0, 0]}>
           <planeGeometry args={[W * 0.92, D * 0.88]} />
-          <meshStandardMaterial ref={glowRef} color="#050506" emissive={ACCENT} emissiveIntensity={0} />
+          <meshStandardMaterial ref={glowRef} color="#FFFDF8" emissive="#FFFDF8" emissiveIntensity={0} />
         </mesh>
         {phase > 0 && (
           <Html transform position={[0, -0.004, D / 2]} rotation={[Math.PI / 2, 0, 0]} distanceFactor={1.95} zIndexRange={[10, 0]}>
-            <CallScreen phase={phase} avatar={avatar} />
+            <WelcomeScreen phase={phase} avatar={avatar} />
           </Html>
         )}
       </group>
@@ -280,7 +277,7 @@ function Rig({ onDone, avatar }) {
     wheels.current.forEach((w) => w && (w.rotation.z = -(tx - TRUCK_START_X) / WHEEL_R));
     const since = s - T.driveEnd;
     const dip = since > 0 ? -0.035 * Math.exp(-since * 5) * Math.sin(since * 14) : 0;
-    const squat = 0.03 * Math.sin(Math.PI * prog(s, T.leaveStart, T.leaveStart + 0.9)); // nose lifts as it pulls away
+    const squat = 0.03 * Math.sin(Math.PI * prog(s, T.leaveStart, T.leaveStart + 0.9));
     body.current.rotation.z = dip + squat;
 
     // 2. laptop: rides on the bed, then arcs over onto the bench
@@ -306,8 +303,8 @@ function Rig({ onDone, avatar }) {
     // 4. lid opens, screen lights up
     const open = easeOut(prog(s, T.lidStart, T.lidEnd));
     lid.current.rotation.x = -1.85 * open;
-    glow.current.emissiveIntensity = 0.25 * open;
-    light.current.intensity = 6 * open;
+    glow.current.emissiveIntensity = 0.5 * open;
+    light.current.intensity = 3 * open;
 
     const next = s >= T.connected ? 2 : s >= T.ring ? 1 : 0;
     if (next !== phaseRef.current) {
@@ -318,7 +315,6 @@ function Rig({ onDone, avatar }) {
     // 5. camera: slow drift, then push in to the screen
     const zoom = easeInOut(prog(s, T.zoomStart, T.end));
     const drift = Math.sin(s * 0.6) * 0.2;
-    // pull the camera back on narrow / portrait screens so the whole scene fits
     const fit = Math.max(1, 1.75 / (size.width / size.height));
     camera.position.set(
       THREE.MathUtils.lerp((3.6 + drift) * fit, 0.15, zoom),
@@ -345,20 +341,20 @@ function Rig({ onDone, avatar }) {
       </mesh>
       <mesh ref={cable}>
         <cylinderGeometry args={[0.008, 0.008, 1, 6]} />
-        <meshStandardMaterial color="#9c9c98" />
+        <meshStandardMaterial color="#6A6458" />
       </mesh>
       <mesh ref={hookBlock}>
         <boxGeometry args={[0.12, 0.08, 0.12]} />
-        <meshStandardMaterial color="#555" metalness={0.6} />
+        <meshStandardMaterial color="#444" metalness={0.5} />
       </mesh>
 
-      <pointLight ref={light} position={[0, 1.6, BENCH_Z + 0.6]} color={ACCENT} intensity={0} distance={4} />
+      <pointLight ref={light} position={[0, 1.6, BENCH_Z + 0.6]} color="#FFFDF8" intensity={0} distance={4} />
     </>
   );
 }
 
 export default function IntroScene({ onDone, onReady, avatar }) {
-  // lighter rendering on phones: no shadows, no antialiasing, lower resolution, fewer road dashes
+  // lighter rendering if a small screen ever gets here: no shadows, no antialiasing
   const lite = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
   useEffect(() => {
@@ -374,12 +370,11 @@ export default function IntroScene({ onDone, onReady, avatar }) {
       style={{ position: "absolute", inset: 0 }}
     >
       <color attach="background" args={[BG]} />
-      <fog attach="fog" args={[BG, 9, 20]} />
-      <ambientLight intensity={0.9} />
-      <hemisphereLight args={["#ffffff", "#202024", 0.9]} />
+      <ambientLight intensity={1} />
+      <hemisphereLight args={["#ffffff", "#D8CFBC", 0.9]} />
       <directionalLight
         position={[4, 7, 5]}
-        intensity={2.8}
+        intensity={2.4}
         castShadow={!lite}
         shadow-mapSize={lite ? [512, 512] : [1024, 1024]}
         shadow-camera-left={-6}
@@ -388,19 +383,21 @@ export default function IntroScene({ onDone, onReady, avatar }) {
         shadow-camera-bottom={-6}
       />
 
-      {/* ground + road */}
+      {/* ground: invisible except for soft shadows, so it blends into the page */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color="#141417" roughness={1} />
+        <shadowMaterial transparent opacity={0.16} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, TRUCK_Z]} receiveShadow>
+
+      {/* road */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, TRUCK_Z]}>
         <planeGeometry args={[60, 2.4]} />
-        <meshStandardMaterial color="#1b1b1f" roughness={1} />
+        <meshBasicMaterial color={ROAD} />
       </mesh>
       {Array.from({ length: lite ? 6 : 14 }, (_, i) => (
         <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} position={[-20 + i * (lite ? 7 : 3), 0.004, TRUCK_Z - 1.05]}>
           <planeGeometry args={[1.2, 0.06]} />
-          <meshBasicMaterial color="#3a3a3f" />
+          <meshBasicMaterial color="#CFC4AC" />
         </mesh>
       ))}
 

@@ -13,7 +13,6 @@ from llama_index.core.base.llms.types import ChatMessage
 
 from app import config, llm
 from app.prompts import SYSTEM_PROMPT
-from app.retriever import build_retriever
 from app.tools.github import github_tools
 from app.tools.knowledge import make_search_tool
 
@@ -27,8 +26,8 @@ class AgentEvent:
     detail: str = ""
 
 
-def build_agent() -> FunctionAgent:
-    tools = [make_search_tool(build_retriever()), *github_tools()]
+def build_agent(store) -> FunctionAgent:
+    tools = [make_search_tool(store), *github_tools()]
     return FunctionAgent(
         name="portfolio_agent",
         description="Answers questions about Leo Zuze's work, services and GitHub.",
@@ -39,7 +38,7 @@ def build_agent() -> FunctionAgent:
 
 
 def _content_text(content) -> str:
-    """Gradio can hand back message content as str or as a list of parts."""
+    """Message content can arrive as a str or as a list of parts."""
     if isinstance(content, str):
         return content
     if isinstance(content, dict):

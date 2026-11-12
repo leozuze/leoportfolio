@@ -1,46 +1,94 @@
-"""Multi-query retriever: rewrite the question into several search queries,
-search ChromaDB with each, and merge the results with reciprocal rank fusion.
+"""In-memory BM25 retriever. No embeddings, no vector database, no extra LLM call.
 
 Try it:  python -m app.retriever "which projects are live?"
 """
-import chromadb
-from llama_index.core import VectorStoreIndex
-from llama_index.core.retrievers import QueryFusionRetriever
-from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
-from llama_index.vector_stores.chroma import ChromaVectorStore
+import math
+import re
+from collections import Counter
+from dataclasses import dataclass
 
-from app import config, llm
+from app import config
+from app.ingest import Chunk, load_chunks
 
-QUERY_GEN_PROMPT = (
-    "You rewrite a visitor's question into search queries for a developer portfolio "
-    "knowledge base (bio, skills, projects, services and pricing, FAQ and contact).\n"
-    "Write {num_queries} different search queries, one per line, with no numbering, "
-    "no quotes and no commentary.\n"
-    "If the question has several parts, give each part its own query. "
-    "Otherwise rephrase it using different wording and likely keywords.\n"
-    "Question: {query}\n"
-    "Queries:\n"
+TITLE_BOOST = 3  # a title match counts as if the title appeared this many times
+
+_STOPWORDS = frozenset(
+    "a an and are as at be by can do does for from has have how i in is it its of on or "
+    "that the this to was what when where which who why will with you your he his leo "
+    "tell me about".split()
 )
 
 
-def load_index() -> VectorStoreIndex:
-    client = chromadb.PersistentClient(path=str(config.CHROMA_DIR))
-    collection = client.get_collection(config.COLLECTION_NAME)  # run ingest first
-    return VectorStoreIndex.from_vector_store(ChromaVectorStore(chroma_collection=collection))
+def _stem(token: str) -> str:
+    """Very light plural stripping so 'projects' matches 'project'."""
+    if len(token) > 4 and token.endswith("ies"):
+        return token[:-3] + "y"
+    if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
+        return token[:-1]
+    return token
 
 
-def build_retriever(index: VectorStoreIndex | None = None, verbose: bool = False) -> QueryFusionRetriever:
-    index = index or load_index()
-    return QueryFusionRetriever(
-        [index.as_retriever(similarity_top_k=config.TOP_K)],
-        llm=llm.get_llm(config.GROQ_QUERY_MODEL, config.QUERY_MAX_TOKENS),
-        query_gen_prompt=QUERY_GEN_PROMPT,
-        mode=FUSION_MODES.RECIPROCAL_RANK,
-        similarity_top_k=config.TOP_K,
-        num_queries=config.NUM_QUERIES,
-        use_async=False,  # avoids event-loop clashes inside Gradio / FastAPI
-        verbose=verbose,
-    )
+def tokenize(text: str) -> list[str]:
+    return [
+        _stem(t)
+        for t in re.findall(r"[a-z0-9]+", text.lower())
+        if t not in _STOPWORDS
+    ]
+
+
+@dataclass(frozen=True)
+class Result:
+    chunk: Chunk
+    score: float
+
+
+class BM25Retriever:
+    def __init__(self, chunks: list[Chunk], top_k: int = config.TOP_K,
+                 k1: float = 1.5, b: float = 0.75):
+        self.chunks = list(chunks)
+        self.top_k = top_k
+        self.k1 = k1
+        self.b = b
+
+        self._tf: list[Counter] = []
+        self._len: list[int] = []
+        df: Counter = Counter()
+        for chunk in self.chunks:
+            meta_tokens = tokenize(f"{chunk.category} {chunk.status}")
+            tokens = tokenize(chunk.title) * TITLE_BOOST + meta_tokens + tokenize(chunk.text)
+            tf = Counter(tokens)
+            self._tf.append(tf)
+            self._len.append(len(tokens))
+            df.update(tf.keys())
+
+        n = len(self.chunks)
+        self._avgdl = (sum(self._len) / n) if n else 1.0
+        self._idf = {
+            term: math.log(1 + (n - d + 0.5) / (d + 0.5)) for term, d in df.items()
+        }
+
+    def retrieve(self, query: str) -> list[Result]:
+        terms = {t for t in tokenize(query) if t in self._idf}
+        if not terms:
+            return []
+
+        scored = []
+        for i, tf in enumerate(self._tf):
+            score = 0.0
+            norm = self.k1 * (1 - self.b + self.b * self._len[i] / self._avgdl)
+            for term in terms:
+                freq = tf.get(term, 0)
+                if freq:
+                    score += self._idf[term] * freq * (self.k1 + 1) / (freq + norm)
+            if score > 0:
+                scored.append(Result(self.chunks[i], score))
+
+        scored.sort(key=lambda r: r.score, reverse=True)
+        return scored[: self.top_k]
+
+
+def build_retriever(chunks: list[Chunk] | None = None) -> BM25Retriever:
+    return BM25Retriever(chunks if chunks is not None else load_chunks())
 
 
 if __name__ == "__main__":
@@ -48,13 +96,12 @@ if __name__ == "__main__":
     import time
 
     question = " ".join(sys.argv[1:]) or "Which projects are live?"
-    llm.configure_embeddings()
-    retriever = build_retriever(verbose=True)
-    start = time.time()
+    retriever = build_retriever()
+    start = time.perf_counter()
     results = retriever.retrieve(question)
-    print(f"\n{len(results)} chunks in {time.time() - start:.1f}s for: {question}\n")
+    ms = (time.perf_counter() - start) * 1000
+    print(f"\n{len(results)} chunks in {ms:.1f} ms for: {question}\n")
     for r in results:
-        m = r.node.metadata
-        text = r.node.get_content(metadata_mode="none").replace("\n", " ")
-        print(f"[{r.score:.4f}] {m['category']} | {m['title']} | status={m['status']}")
-        print(f"    {text[:220]}...\n")
+        c = r.chunk
+        print(f"[{r.score:.3f}] {c.category} | {c.title} | status={c.status}")
+        print(f"    {c.text.replace(chr(10), ' ')[:220]}...\n")
