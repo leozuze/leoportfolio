@@ -1,76 +1,63 @@
-const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
-).replace(/\/+$/, "");
+const BASE = (
+  import.meta.env.VITE_AGENT_URL || "http://localhost:8000"
+).replace(/\/$/, "");
 
-export async function streamChat({
-  message,
-  history,
-  signal,
-  onEvent,
-}) {
-  const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
+export async function streamChat({ message, history = [], signal, onEvent }) {
+  const response = await fetch(`${BASE}/api/chat/stream`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/x-ndjson",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, history }),
     signal,
   });
 
   if (!response.ok) {
     let detail = "";
-
     try {
-      const body = await response.json();
-      detail = typeof body.detail === "string" ? body.detail : "";
+      const data = await response.json();
+      if (typeof data.detail === "string") detail = data.detail;
     } catch {
-      // Use the fallback below for non-JSON responses.
+      /* body was not JSON */
     }
-
-    throw new Error(
-      detail || `The assistant couldn't respond (${response.status}).`
-    );
+    throw new Error(detail || "Something went wrong. Please try again.");
   }
 
   if (!response.body) {
-    throw new Error("Your browser couldn't open the response stream.");
+    throw new Error("Streaming is not supported in this browser.");
   }
 
   const reader = response.body.getReader();
-  const decoder = new TextDecoder();
+  const decoder = new TextDecoder("utf-8");
   let buffer = "";
 
-  function consumeLines(flush = false) {
-    const lines = buffer.split("\n");
-    buffer = flush ? "" : lines.pop() ?? "";
+  const handleLine = (line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
 
-    for (const line of lines) {
-      if (line.trim()) {
-        onEvent(JSON.parse(line));
-      }
+    let event;
+    try {
+      event = JSON.parse(trimmed);
+    } catch {
+      return;
     }
-  }
+    onEvent(event);
+  };
 
   try {
     while (true) {
-      const { value, done } = await reader.read();
-
+      const { done, value } = await reader.read();
       if (done) break;
 
+      // stream: true keeps multi-byte characters intact across chunks
       buffer += decoder.decode(value, { stream: true });
-      consumeLines();
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+      lines.forEach(handleLine);
     }
 
     buffer += decoder.decode();
-    consumeLines(true);
+    if (buffer.trim()) handleLine(buffer);
   } finally {
-    try {
-      await reader.cancel();
-    } catch {
-      // The connection may already be closed.
-    }
-
-    reader.releaseLock();
+    reader.cancel().catch(() => {});
   }
 }

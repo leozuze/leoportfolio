@@ -7,6 +7,11 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
+
+def _csv(name: str, default: str = "") -> tuple[str, ...]:
+    return tuple(p.strip() for p in os.getenv(name, default).split(",") if p.strip())
+
+
 # --- Groq ---------------------------------------------------------------
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 # Final answers and tool use
@@ -58,12 +63,34 @@ FORBIDDEN_IN_CORPUS = [
 # --- Agent -------------------------------------------------------------------
 ANSWER_MAX_TOKENS = int(os.getenv("ANSWER_MAX_TOKENS", "1500"))  # a ceiling, not a target
 HISTORY_MESSAGES = 6   # past messages resent to the model each turn (limits token use)
+HISTORY_MESSAGE_MAX_CHARS = int(os.getenv("HISTORY_MESSAGE_MAX_CHARS", "3000"))
 MAX_AGENT_STEPS = 6    # hard cap on LLM/tool loops per question
 
+# --- API ---------------------------------------------------------------------
+# Origins allowed to call the API from a browser (comma separated in the env var).
+FRONTEND_ORIGINS = tuple(
+    origin.rstrip("/")
+    for origin in _csv(
+        "FRONTEND_ORIGINS",
+        "https://leozuze.com,https://www.leozuze.com,"
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173",
+    )
+)
 
-def _csv(name: str, default: str = "") -> tuple[str, ...]:
-    return tuple(p.strip() for p in os.getenv(name, default).split(",") if p.strip())
-
+# Rate limits (in memory, one worker). Per client = per IP address.
+RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "6"))
+RATE_LIMIT_PER_HOUR = int(os.getenv("RATE_LIMIT_PER_HOUR", "40"))
+# Across all visitors. The day limit protects the Groq free tier (1000 requests a day,
+# and one chat can use several requests).
+GLOBAL_PER_MINUTE = int(os.getenv("GLOBAL_PER_MINUTE", "12"))
+GLOBAL_PER_DAY = int(os.getenv("GLOBAL_PER_DAY", "250"))
+# Chats running at the same time (Groq free tier is 8000 tokens a minute).
+MAX_CONCURRENT_CHATS = int(os.getenv("MAX_CONCURRENT_CHATS", "2"))
+CHAT_QUEUE_TIMEOUT_SECONDS = 20
+# Behind Render's proxy the visitor's IP is in X-Forwarded-For (first entry).
+TRUST_FORWARDED_FOR = os.getenv("TRUST_FORWARDED_FOR", "true").lower() in ("1", "true", "yes")
+# Minimum gap between streamed "answer" events. The final event is always sent in full.
+STREAM_MIN_INTERVAL_SECONDS = float(os.getenv("STREAM_MIN_INTERVAL_SECONDS", "0.05"))
 
 # --- GitHub (read-only, public repos only) ---------------------------------
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
