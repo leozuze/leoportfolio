@@ -1,6 +1,36 @@
-const BASE = (
-  import.meta.env.VITE_AGENT_URL || "http://localhost:8000"
-).replace(/\/$/, "");
+const PRODUCTION_URL = "https://jayz-agent.onrender.com";
+const DEV_URL = "http://localhost:8000";
+
+const LOCAL_HOST =
+  /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|\[::1\]|::1)$/i;
+
+function isLocalUrl(value) {
+  try {
+    return LOCAL_HOST.test(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function resolveBase() {
+  const fromEnv = (import.meta.env.VITE_AGENT_URL || "").trim();
+
+  // Dev server (npm run dev): use the env var if set, else the local agent.
+  if (import.meta.env.DEV) {
+    return (fromEnv || DEV_URL).replace(/\/+$/, "");
+  }
+
+  // Production build: always Render. A local address in the env var is
+  // ignored, because a public page calling localhost makes the browser show
+  // a "local network access" permission prompt.
+  if (fromEnv && !isLocalUrl(fromEnv)) {
+    return fromEnv.replace(/\/+$/, "");
+  }
+
+  return PRODUCTION_URL;
+}
+
+const BASE = resolveBase();
 
 export async function streamChat({ message, history = [], signal, onEvent }) {
   const response = await fetch(`${BASE}/api/chat/stream`, {

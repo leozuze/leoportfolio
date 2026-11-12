@@ -15,6 +15,7 @@ from app import config, llm
 from app.prompts import SYSTEM_PROMPT
 from app.tools.github import github_tools
 from app.tools.knowledge import make_search_tool
+from app.urlguard import extract_urls, hide_unfinished_link, sanitise
 
 
 @dataclass
@@ -87,6 +88,10 @@ async def ask(
     answer = ""
     tool_started: dict[str, float] = {}
 
+    # Every URL a tool returned during this request. Only these may be shown.
+    allowed_urls: set[str] = set()
+    removed_links = 0
+
     def elapsed() -> float:
         return time.perf_counter() - started
 
@@ -132,10 +137,15 @@ async def ask(
                     elapsed(),
                 )
 
+                full_output = str(ev.tool_output.content)
+
+                # Collect from the full output, not the truncated copy below.
+                allowed_urls |= extract_urls(full_output)
+
                 yield AgentEvent(
                     "tool_result",
                     name=ev.tool_name,
-                    text=str(ev.tool_output.content)[:6000],
+                    text=full_output[:6000],
                 )
 
             elif isinstance(ev, AgentStream):
@@ -151,16 +161,25 @@ async def ask(
 
                 answer += delta
 
-                yield AgentEvent(
-                    "token",
-                    text=clean_text(answer),
+                visible, _ = sanitise(
+                    hide_unfinished_link(clean_text(answer)),
+                    allowed_urls,
                 )
+
+                yield AgentEvent("token", text=visible)
 
         result = await handler
 
-        final_text = clean_text(
-            str(result).strip() or answer.strip()
+        final_text, removed_links = sanitise(
+            clean_text(str(result).strip() or answer.strip()),
+            allowed_urls,
         )
+
+        if removed_links:
+            logger.warning(
+                "Link guard removed %d unverified link(s) from an answer",
+                removed_links,
+            )
 
         logger.info(
             "Agent finished in %.2fs; answer_chars=%d",
@@ -168,7 +187,7 @@ async def ask(
             len(final_text),
         )
 
-        yield AgentEvent("final", text=final_text)
+        yield AgentEvent("final", text=final_text.strip())
 
     except Exception as e:
         logger.exception(
