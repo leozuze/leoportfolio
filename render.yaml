@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: jayz-agent
+    runtime: python
+    plan: free
+    rootDir: agent
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Set to the exact version `python --version` prints in your local venv.
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: FEED_SOURCE
+        value: https://leozuze.com/agent-knowledge.json
+      - key: FRONTEND_ORIGINS
+        value: https://leozuze.com,https://www.leozuze.com,http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173
+      - key: GITHUB_USER
+        value: leozuze
+      # Pending your decision on Bevoya. Remove it here if the bot should not see it.
+      - key: GITHUB_EXTRA_ORGS
+        value: Team-DANN,Bevoya
+      - key: GITHUB_HIDDEN_REPOS
+        value: ATO-Shield
+      - key: SYNC_INTERVAL_HOURS
+        value: "24"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
