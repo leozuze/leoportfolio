@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Mail, Send, Check } from "lucide-react";
-import { FaGithub, FaLinkedin, FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { ArrowUpRight, Check, Mail, Send } from "lucide-react";
+import { FaFacebook, FaGithub, FaInstagram, FaLinkedin, FaWhatsapp } from "react-icons/fa";
+import PageHeader from "../components/ui/PageHeader";
+import { Reveal } from "../components/motion/primitives";
 import Seo from "../components/Seo";
+import { SEO } from "../data/seoRoutes";
 
 const EMAIL = "leonoelzuze@gmail.com";
 const PHONE = "+91 97645 06058";
@@ -23,6 +25,7 @@ const quickContacts = [
     icon: FaWhatsapp,
     href: WHATSAPP_URL,
     cta: "Message on WhatsApp",
+    external: true,
   },
   {
     label: "Email",
@@ -33,8 +36,11 @@ const quickContacts = [
   },
 ];
 
+const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-muted";
+const fieldClass =
+  "w-full rounded-md border border-border bg-bg px-4 py-3.5 text-base text-text transition-colors placeholder:text-muted/60 focus:border-ink focus:outline-none";
+
 export default function Contact() {
-  const shouldReduceMotion = useReducedMotion();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
 
@@ -42,217 +48,171 @@ export default function Contact() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // No backend wired up yet, so this hands the message off to the visitor's
-  // own mail client, prefilled and ready to send. Swap this for a fetch()
-  // to your own Express endpoint (or EmailJS/Formspree) once you have one —
-  // the form fields and validation below don't need to change either way.
+  // No backend yet, so this hands the message to the visitor's own mail client,
+  // prefilled and ready to send. Swap this for a fetch() to your own endpoint
+  // (or EmailJS / Formspree) later; the fields and validation stay the same.
   const handleSubmit = (e) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`Portfolio inquiry from ${form.name || "a visitor"}`);
-    const body = encodeURIComponent(
-      `${form.message}\n\n—\n${form.name}\n${form.email}`
-    );
+    const subject = encodeURIComponent(`Project enquiry from ${form.name || "a visitor"}`);
+    const body = encodeURIComponent(`${form.message}\n\n\u2014\n${form.name}\n${form.email}`);
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
     setSent(true);
   };
 
-  const fadeUp = {
-    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 16 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
-  };
-
-  const cardContainer = {
-    hidden: {},
-    visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-  };
-  const card = {
-    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 18 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-  };
-
   return (
-    <div className="max-w-4xl mx-auto px-6 py-20 md:py-28 overflow-x-hidden">
-      <Seo
-        title="Contact Leo Zuze | Start a Project"
-        description="Get in touch with Leo Zuze by WhatsApp, email or the contact form to start a website, full stack app or AI project."
-        path="/contact"
+    <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-12 md:pb-32 md:pt-16">
+      <Seo {...SEO.contact} />
+
+      <PageHeader
+        eyebrow="Contact"
+        lines={[{ text: "Tell me what" }, { text: "you need.", accent: true }]}
+        intro="WhatsApp or email get the fastest reply. The form works too: it opens straight into your mail client, prefilled and ready to send."
       />
 
-      {/* Page header */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.6 }}
-        variants={fadeUp}
-        className="max-w-2xl mb-14"
-      >
-        <p className="font-mono text-xs uppercase tracking-widest text-accent mb-2">
-          Contact
-        </p>
-        <h1 className="font-heading text-3xl md:text-4xl font-bold text-text mb-4">
-          Let's Talk
-        </h1>
-        <p className="text-muted text-sm md:text-base leading-relaxed">
-          WhatsApp or email get the fastest reply. The form below works too 
-          it opens straight into your mail client, prefilled and ready to go.
-        </p>
-      </motion.div>
-
-      {/* Quick contact cards */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.3 }}
-        variants={cardContainer}
-        className="grid sm:grid-cols-2 gap-4 mb-16"
-      >
-        {quickContacts.map(({ label, detail, icon: Icon, href, cta }) => (
-          <motion.a
-            key={label}
-            href={href}
-            target={label === "WhatsApp" ? "_blank" : undefined}
-            rel={label === "WhatsApp" ? "noopener noreferrer" : undefined}
-            variants={card}
-            whileHover={shouldReduceMotion ? {} : { y: -4 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="group bg-surface border border-border rounded-2xl p-6 hover:border-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 text-accent shrink-0">
-                <Icon size={18} />
-              </span>
-              <h2 className="font-heading text-lg font-semibold text-text">
-                {label}
-              </h2>
-            </div>
-            <p className="text-sm text-muted leading-relaxed mb-3">{detail}</p>
-            <span className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-widest text-muted group-hover:text-accent transition-colors">
-              {cta}
-            </span>
-          </motion.a>
-        ))}
-        <p className="sm:col-span-2 text-center text-xs text-muted">
-          Prefer a call?{" "}
-          <a href="tel:+919764506058" className="text-accent hover:underline">
-            {PHONE}
-          </a>
-        </p>
-      </motion.div>
-
-      {/* Message form */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.3 }}
-        variants={fadeUp}
-        className="bg-surface border border-border rounded-3xl p-6 md:p-10"
-      >
-        <h2 className="font-heading text-xl md:text-2xl font-semibold text-text mb-1">
-          Send a Message
-        </h2>
-        <p className="text-sm text-muted mb-8">
-          Got a longer brief? Write it here instead.
-        </p>
-
-        {sent ? (
-          <div className="flex items-center gap-3 text-accent bg-accent/10 border border-accent/30 rounded-2xl px-5 py-4">
-            <Check size={18} className="shrink-0" />
-            <p className="text-sm">
-              Your mail client should be open with everything prefilled just
-              hit send there.
-            </p>
+      <div className="mt-14 grid gap-10 lg:grid-cols-12">
+        {/* Quick contacts */}
+        <div className="lg:col-span-5">
+          <div className="flex flex-col gap-4">
+            {quickContacts.map(({ label, detail, icon: Icon, href, cta, external }, i) => (
+              <Reveal key={label} delay={i * 0.1}>
+                <a
+                  href={href}
+                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="group flex items-start gap-4 rounded-lg border border-border bg-surface p-6 transition-[translate,border-color] duration-300 hover:-translate-y-1 hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-reduce:transform-none motion-reduce:transition-none"
+                >
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-ink text-on-ink transition-colors duration-300 group-hover:bg-accent">
+                    <Icon size={20} aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-heading text-lg font-extrabold text-text">{label}</span>
+                    <span className="mt-1 block text-sm leading-relaxed text-muted">{detail}</span>
+                    <span className="mt-3 block truncate text-xs font-semibold uppercase tracking-[0.12em] text-text group-hover:text-accent">
+                      {cta}
+                    </span>
+                  </span>
+                  <ArrowUpRight
+                    size={18}
+                    aria-hidden
+                    className="shrink-0 text-accent transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none"
+                  />
+                </a>
+              </Reveal>
+            ))}
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid sm:grid-cols-2 gap-5">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-xs font-mono uppercase tracking-widest text-muted mb-2"
-                >
-                  Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Your name"
-                  className="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-text placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-xs font-mono uppercase tracking-widest text-muted mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
-                  className="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-text placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors"
-                />
-              </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-xs font-mono uppercase tracking-widest text-muted mb-2"
+          <Reveal className="mt-6">
+            <p className="text-sm text-muted">
+              Prefer a call?{" "}
+              <a
+                href="tel:+919764506058"
+                className="border-b-2 border-ink pb-0.5 font-semibold text-text transition-colors hover:border-accent hover:text-accent"
               >
-                Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows={5}
-                value={form.message}
-                onChange={handleChange}
-                placeholder="What are you building?"
-                className="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-text placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors resize-none"
-              />
+                {PHONE}
+              </a>
+            </p>
+
+            <div className="mt-8 flex gap-3">
+              {SOCIALS.map(({ icon: Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="grid h-11 w-11 place-items-center rounded-md border border-border text-muted transition-all duration-200 hover:-translate-y-0.5 hover:border-accent hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transform-none"
+                >
+                  <Icon size={18} />
+                </a>
+              ))}
             </div>
+          </Reveal>
+        </div>
 
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 bg-accent text-bg px-6 py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
-            >
-              Send Message <Send size={16} />
-            </button>
-          </form>
-        )}
-      </motion.div>
+        {/* Message form */}
+        <Reveal className="lg:col-span-7">
+          <div className="rounded-xl border border-border bg-surface p-6 md:p-10">
+            <h2 className="font-heading text-2xl font-extrabold tracking-tight text-text">
+              Send a message
+            </h2>
+            <p className="mt-1 text-sm text-muted">Got a longer brief? Write it here instead.</p>
 
-      {/* Social links */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.6 }}
-        variants={fadeUp}
-        className="flex items-center justify-center gap-4 mt-14"
-      >
-        {SOCIALS.map(({ icon: Icon, href, label }) => (
-          <a
-            key={label}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={label}
-            className="flex items-center justify-center w-11 h-11 rounded-full border border-border text-muted hover:border-accent hover:text-accent transition-colors"
-          >
-            <Icon size={18} />
-          </a>
-        ))}
-      </motion.div>
+            {sent ? (
+              <div className="mt-8 flex items-start gap-3 rounded-lg border border-ink bg-bg px-5 py-4 text-text">
+                <Check size={18} aria-hidden className="mt-0.5 shrink-0 text-accent" />
+                <p className="text-sm leading-relaxed">
+                  Your mail client should be open with everything prefilled. Just press send there
+                  and I&rsquo;ll reply personally.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="name" className={labelClass}>
+                      Name
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      required
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      placeholder="Your name"
+                      className={fieldClass}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className={labelClass}>
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      placeholder="you@example.com"
+                      className={fieldClass}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="message" className={labelClass}>
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    rows={6}
+                    value={form.message}
+                    onChange={handleChange}
+                    placeholder="What are you building, and what is slowing you down?"
+                    className={`${fieldClass} resize-none`}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-md bg-ink px-7 py-4 text-sm font-semibold text-on-ink transition-colors duration-300 before:absolute before:inset-0 before:translate-y-full before:bg-accent before:transition-transform before:duration-300 before:ease-out hover:before:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-reduce:before:transition-none"
+                >
+                  <span className="relative">Send message</span>
+                  <Send
+                    size={16}
+                    aria-hidden
+                    className="relative transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transform-none"
+                  />
+                </button>
+              </form>
+            )}
+          </div>
+        </Reveal>
+      </div>
     </div>
   );
 }

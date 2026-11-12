@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "export:agent": "node scripts/export-agent-knowledge.mjs",
     "prebuild": "npm run export:agent",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender-meta.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

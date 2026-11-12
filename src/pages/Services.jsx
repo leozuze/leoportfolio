@@ -1,126 +1,104 @@
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Check } from "lucide-react";
 import { services, getWhatsAppLink } from "../data/services";
+import PageHeader from "../components/ui/PageHeader";
+import PageCTA from "../components/ui/PageCTA";
+import { Reveal } from "../components/motion/primitives";
 import Seo from "../components/Seo";
+import { SEO } from "../data/seoRoutes";
+
+const pad = (n) => String(n).padStart(2, "0");
+
+const BTN =
+  "group relative inline-flex w-fit items-center gap-2.5 overflow-hidden rounded-md bg-ink px-6 py-3.5 text-sm font-semibold text-on-ink transition-colors duration-300 before:absolute before:inset-0 before:translate-y-full before:bg-accent before:transition-transform before:duration-300 before:ease-out hover:before:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-reduce:before:transition-none";
 
 export default function Services() {
-  const shouldReduceMotion = useReducedMotion();
-
-  const headerFade = {
-    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 16 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
-  };
-
-  const item = {
-    hidden: (i) => ({
-      opacity: 0,
-      x: shouldReduceMotion ? 0 : i % 2 === 0 ? -48 : 48,
-    }),
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.55, ease: "easeOut" },
-    },
-  };
-
   return (
-    <div className="pt-32 pb-24 bg-bg min-h-screen overflow-x-hidden">
-      <Seo
-        title="Services | Web Development & AI Tools by Leo Zuze"
-        description="Web development for businesses, plus AI and data work. Every project starts with a conversation, so you only pay for what you need."
-        path="/services"
+    <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-12 md:pb-32 md:pt-16">
+      <Seo {...SEO.services} />
+
+      <PageHeader
+        eyebrow="Services"
+        lines={[
+          { text: "What I can" },
+          { text: "build for your" },
+          { text: "business.", accent: true },
+        ]}
+        intro="Five services, one developer. Every project starts with a short chat and a fixed quote, so you know the price before any work begins."
       />
 
-      <div className="max-w-6xl mx-auto px-6">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: false, amount: 0.6 }}
-          variants={headerFade}
-          className="max-w-2xl mb-16"
-        >
-          <p className="font-mono text-xs uppercase tracking-widest text-accent mb-2">
-            How I Can Help
-          </p>
-          <h1 className="font-heading text-3xl md:text-4xl font-bold text-text mb-4">
-            Services
-          </h1>
-          <p className="text-muted text-sm md:text-base leading-relaxed">
-            Straightforward web development, delivered with care plus the
-            AI and data work I'm actively building toward. Every project
-            starts with a conversation, so you only pay for what you need.
-          </p>
-        </motion.div>
-
-        <div className="flex flex-col gap-12">
-          {services.map((service, i) => {
-            const Icon = service.icon;
-            return (
-              <motion.div
-                key={service.id}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: false, amount: 0.3 }}
-                variants={item}
-                className="group relative"
+      <div className="mt-16 flex flex-col gap-6 md:mt-20">
+        {services.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <Reveal key={s.id}>
+              <article
+                id={s.id}
+                className="group/card relative grid scroll-mt-28 gap-8 overflow-hidden rounded-xl border border-border bg-surface p-7 transition-colors duration-300 hover:border-ink md:grid-cols-12 md:p-10"
               >
-                <div
-                  className={`absolute -inset-3 bg-gradient-to-br from-accent/15 via-surface to-accent-2/10 rounded-[2.5rem] border border-border ${service.rotate} transition-transform duration-300 group-hover:rotate-0`}
-                />
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -right-2 -top-6 select-none font-heading text-[9rem] font-extrabold leading-none text-transparent transition-transform duration-500 group-hover/card:-translate-x-2 motion-reduce:transform-none"
+                  style={{ WebkitTextStroke: "1px rgba(22,20,15,0.1)" }}
+                >
+                  {pad(i + 1)}
+                </span>
 
-                <div className="relative z-10 bg-surface border border-border rounded-3xl p-8 md:p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div>
-                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-5">
-                      <Icon size={22} className="text-accent" />
-                    </div>
-                    <h2 className="font-heading text-2xl font-semibold text-text mb-2">
-                      {service.title}
-                    </h2>
-                    <p className="text-muted text-sm leading-relaxed">
-                      {service.tagline}
-                    </p>
+                <div className="relative md:col-span-5">
+                  <span className="grid h-12 w-12 place-items-center rounded-md bg-ink text-on-ink transition-colors duration-300 group-hover/card:bg-accent">
+                    <Icon size={22} aria-hidden />
+                  </span>
+                  <h2 className="mt-6 font-heading text-2xl font-extrabold leading-tight tracking-tight text-text md:text-3xl">
+                    {s.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted md:text-base">{s.tagline}</p>
 
-                    {service.status === "in-development" ? (
-                      <span className="inline-block text-xs font-medium text-accent bg-accent/10 rounded-full px-3 py-1 mt-5">
-                        In Development
-                      </span>
-                    ) : (
-                      <p className="font-mono text-text mt-5">{service.price}</p>
-                    )}
-                    <p className="text-muted text-xs mt-1.5">{service.priceNote}</p>
-                  </div>
-
-                  <div className="md:col-span-2 flex flex-col justify-between">
-                    <div>
-                      <p className="text-muted leading-relaxed mb-5">
-                        {service.description}
-                      </p>
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
-                        {service.features.map((feature) => (
-                          <li key={feature} className="text-sm text-muted flex items-start gap-2">
-                            <span className="text-accent mt-1">•</span>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <a
-                      href={getWhatsAppLink(service.title)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-bg bg-accent px-5 py-2.5 rounded-full hover:bg-accent-2 hover:scale-105 transition-all duration-200 w-fit mt-6"
-                    >
-                      {service.cta} <ArrowUpRight size={14} />
-                    </a>
-                  </div>
+                  <p className="mt-6 font-heading text-3xl font-extrabold text-text">
+                    {s.price ?? "Let\u2019s talk"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">{s.priceNote}</p>
                 </div>
-              </motion.div>
-            );
-          })}
-        </div>
+
+                <div className="relative flex flex-col justify-between gap-7 md:col-span-7">
+                  <div>
+                    <p className="text-sm leading-relaxed text-muted md:text-base">{s.description}</p>
+                    <ul className="mt-6 grid gap-x-6 gap-y-3 border-t border-border pt-6 sm:grid-cols-2">
+                      {s.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-3 text-sm text-text/80">
+                          <Check size={15} aria-hidden className="mt-0.5 shrink-0 text-accent" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <a
+                    href={getWhatsAppLink(s.title)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={BTN}
+                  >
+                    <span className="relative">{s.cta}</span>
+                    <ArrowUpRight
+                      size={16}
+                      aria-hidden
+                      className="relative transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none"
+                    />
+                  </a>
+                </div>
+              </article>
+            </Reveal>
+          );
+        })}
       </div>
+
+      <PageCTA
+        className="mt-24 md:mt-32"
+        eyebrow="Not sure what you need?"
+        lines={[{ text: "Describe the problem." }, { text: "I'll suggest the fix.", accent: true }]}
+        text="Tell me what slows your team down. I'll recommend the simplest solution and what it would cost."
+        primary={{ label: "Talk to me", to: "/contact" }}
+        secondary={{ label: "See my projects", to: "/projects" }}
+      />
     </div>
   );
 }

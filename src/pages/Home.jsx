@@ -8,15 +8,12 @@ import CTASection from "../components/sections/CTASection";
 import Intro from "../components/intro/Intro";
 import { IntroProvider } from "../components/intro/IntroContext";
 import Seo from "../components/Seo";
+import { SEO } from "../data/seoRoutes";
 
 export default function Home() {
   return (
     <IntroProvider>
-      <Seo
-        title="Leo Zuze | Freelance AI Engineer & Full-Stack Developer"
-        description="Leo Zuze builds custom AI assistants, chatbots, automation and web apps for businesses. Freelance AI engineer and full-stack developer based in Pune, India."
-        path="/"
-      />
+      <Seo {...SEO.home} />
       <Intro />
       <Hero />
 

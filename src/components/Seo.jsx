@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-
-const SITE = "https://leozuze.com/";
+import { OG_IMAGE, urlFor } from "../data/seoRoutes";
 
 function setMeta(attr, key, content) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -22,19 +21,27 @@ function setCanonical(href) {
   el.setAttribute("href", href);
 }
 
+function removeCanonical() {
+  document.head.querySelector('link[rel="canonical"]')?.remove();
+}
+
 /* updates the existing head tags for the current route (no duplicates) */
-export default function Seo({ title, description, path = "/" }) {
+export default function Seo({ title, description, path = "/", noindex = false }) {
   useEffect(() => {
-    const url = `${SITE}${path}`;
+    const url = urlFor(path);
     document.title = title;
     setMeta("name", "description", description);
+    setMeta("name", "robots", noindex ? "noindex, follow" : "index, follow");
     setMeta("property", "og:title", title);
     setMeta("property", "og:description", description);
     setMeta("property", "og:url", url);
+    setMeta("property", "og:image", OG_IMAGE);
     setMeta("name", "twitter:title", title);
     setMeta("name", "twitter:description", description);
-    setCanonical(url);
-  }, [title, description, path]);
+    setMeta("name", "twitter:image", OG_IMAGE);
+    if (noindex) removeCanonical();
+    else setCanonical(url);
+  }, [title, description, path, noindex]);
 
   return null;
 }

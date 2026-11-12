@@ -1,3 +1,4 @@
+# Everything on leozuze.com may be crawled
 User-agent: *
 Allow: /
 

@@ -1,6 +1,6 @@
 # Portfolio redesign tracker: leozuze.com
 
-Last updated: 12 Nov 2026 (twelfth update)
+Last updated: 12 Nov 2026 (thirteenth update)
 Working rule: one step at a time. We only move to the next step after you approve the current one. Full files every time.
 
 ---
@@ -91,12 +91,13 @@ Working rule: one step at a time. We only move to the next step after you approv
 | 5 | Drone removed. Truck intro restyled (3D on desktop only, short name reveal on phones). PageBackground and chat rethemed | Done, pending a check |
 | 5b | Home sections: ServicesCarousel, FeaturedProjects (stacked cards, no link shown), SkillsPreview (tabs from `data/skills.js`), CTASection (4-step process plus contact options). Approved 11 Nov, then enriched (v2) with more content and motion | v2 delivered, awaiting check |
 | 6 | Home polish pass: `PageSlide` simplified to a plain wrapper (its scale and radius animation caused the scroll drag). Remaining: check spacing between sections | Code delivered, awaiting check |
-| 7 | Other pages, polished one by one: Projects (never print the link on a card), Services, Skills, About (no student info), Contact, 404 | Planned |
 | 8 | Performance pass: uninstall `three`, `@react-three/fiber`, `@react-three/drei` and `@paper-design/shaders-react` once nothing imports them, remove other unused JS, render-blocking, forced reflow, images | Planned |
 | 9 | Accessibility and QA: contrast, ARIA, SVG alt text, reduced motion, responsive, re-run PageSpeed | Planned |
 | 9b | `index.html` rebuilt: freelancer title and description, new theme color, new social image (`og-image.jpg`), new favicon and touch icon, real social links in the structured data, no student info | Code delivered |
 | 9c | Scroll-aware reveal system (`useScrollReveal`): content animates in going down, resets when you scroll back up past it, content above you stays visible. Applied to home sections, footer and the shared `Reveal`/`WordReveal` | Code delivered, awaiting check |
-| 10 | Launch cleanup: remove old vercel domain, sitemap, Search Console | Planned |
+| 9d | SEO and indexing fix: root causes found in Search Console (canonical built as `https://leozuze.com//`, static canonical in `index.html` marking every page as an alternate of Home, duplicate site on `leozuzedev.vercel.app`, SPA returning 200 for unknown URLs). New `seoRoutes.js`, `Seo.jsx`, build-time `scripts/prerender-meta.mjs`, `vercel.json`, `sitemap.xml`, `robots.txt` | Code delivered, needs deploy then Search Console steps |
+| 7 | All pages restyled and scroll-aware: About, Projects (+ `ProjectCard`), Services, Skills, Contact, 404. New shared `PageHeader`, `PageCTA`, `TaperArrow` | Code delivered, awaiting check |
+| 10 | Launch cleanup: Search Console re-inspection, request indexing for all 6 URLs, validate fixes, remove the vercel.app domain from Google | Next |
 
 **File cleanup (from the hero move)**
 - Move `sections/HeroPortrait.jsx` to `home/HeroPortrait.jsx` (rewritten: circle layout, optional cutout, no 3D, no orbit dot)
@@ -148,3 +149,4 @@ Working rule: one step at a time. We only move to the next step after you approv
 - 11 Nov 2026: PageSlide is now a plain wrapper (was scaling and rounding a huge element, which made scrolling drag between the marquee and Services). Intro rule changed: large screens always get the truck, phones get it for their first 3 visits. HeroPortrait gets a tunable `PERSON_W` and headroom for the pop-out. PageBackground kept for inner pages.
 - 11 Nov 2026: Hero photo redone. Cutout exported from `profile1.jpeg`, new `src/lib/heroImage.js` (cutout, avatar, fallback), `HeroPortrait` uses `PERSON_W = 72` so the head rises about 10% above the red circle, and the intro's laptop screen uses the small avatar.
 - 12 Nov 2026: `index.html` matched to the new design (new title and description, `theme-color`, social image 1200x630, favicon, apple touch icon, real sameAs links, no student info). New `useScrollReveal` hook; `Reveal`, `WordReveal`, `SplitText`, `WordFade`, `Flicks`, `FlowLines`, the footer and all home sections now reveal on the way down and reset on the way up. Project images get a wipe reveal. Services cards reveal from their horizontal position.
+- 12 Nov 2026: Pages rebuilt in the new system (About without student info, Projects without the tech filter because `data/projects.js` no longer has tech fields, Services, Skills, Contact, professional 404). SEO: canonical double slash fixed, per-route static meta generated at build, vercel.app and www redirect to leozuze.com, real 404 status for unknown URLs, noindex on the 404 page and on vercel.app hosts.
