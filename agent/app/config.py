@@ -60,8 +60,24 @@ ANSWER_MAX_TOKENS = int(os.getenv("ANSWER_MAX_TOKENS", "1500"))  # a ceiling, no
 HISTORY_MESSAGES = 6   # past messages resent to the model each turn (limits token use)
 MAX_AGENT_STEPS = 6    # hard cap on LLM/tool loops per question
 
+
+def _csv(name: str, default: str = "") -> tuple[str, ...]:
+    return tuple(p.strip() for p in os.getenv(name, default).split(",") if p.strip())
+
+
 # --- GitHub (read-only, public repos only) ---------------------------------
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GITHUB_USER = os.getenv("GITHUB_USER", "leozuze")
+# Organizations whose membership is private on GitHub (invisible to the API).
+# Public memberships are discovered automatically.
+GITHUB_EXTRA_ORGS = _csv("GITHUB_EXTRA_ORGS")
+# Repositories the bot must never show or discuss. Use "name" or "owner/name".
+GITHUB_HIDDEN_REPOS = _csv("GITHUB_HIDDEN_REPOS", "ATO-Shield")
 GITHUB_CACHE_SECONDS = 600
+GITHUB_ORG_CACHE_SECONDS = 3600   # the list of public organizations changes rarely
+GITHUB_CACHE_MAX_ENTRIES = 150
+GITHUB_CACHE_MAX_BYTES = 2_000_000
+GITHUB_MAX_PARALLEL = 4           # simultaneous requests to api.github.com
 GITHUB_README_CHARS = 3000
+GITHUB_FILE_CHARS = 4000
+GITHUB_MAX_FILE_BYTES = 100_000   # larger files are refused, not downloaded

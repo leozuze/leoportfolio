@@ -39,6 +39,30 @@ async def _ask_once(agent, question: str) -> str:
     return "no final event"
 
 
+async def run() -> None:
+    from app.agent import build_agent
+    from app.sync import KnowledgeStore
+
+    store = KnowledgeStore()
+    await store.sync("measure")
+    if store.retriever is None:
+        print("Knowledge index failed to build:", store.last_result)
+        return
+    step(f"knowledge index built ({store.chunk_count} chunks)")
+
+    agent = build_agent(store)
+    step("agent built")
+
+    print("  ->", await _ask_once(agent, "What services does Leo offer and what do they cost?"))
+    step("after first question")
+
+    print("  ->", await _ask_once(agent, "Which of his projects are live?"))
+    step("after second question")
+
+    print("  ->", await _ask_once(agent, "What repositories does Leo have on GitHub?"))
+    step("after GitHub question")
+
+
 def main() -> None:
     step("python + psutil")
 
@@ -55,26 +79,11 @@ def main() -> None:
     import llama_index.llms.groq  # noqa: F401
     step("llama-index groq")
 
-    import chromadb  # noqa: F401
-    step("chromadb import")
+    import app.agent  # noqa: F401
+    import app.sync  # noqa: F401
+    step("app modules imported")
 
-    import fastembed  # noqa: F401
-    step("fastembed import")
-
-    from app import llm
-    from app.agent import build_agent
-
-    llm.configure_embeddings()
-    step("embedding model loaded")
-
-    agent = build_agent()
-    step("agent + retriever built")
-
-    print("  ->", asyncio.run(_ask_once(agent, "What services does Leo offer and what do they cost?")))
-    step("after first question")
-
-    print("  ->", asyncio.run(_ask_once(agent, "Which of his projects are live?")))
-    step("after second question")
+    asyncio.run(run())
 
     peak = getattr(_proc.memory_info(), "peak_wset", None)  # Windows only
     if peak:
